@@ -80,10 +80,13 @@ unsigned int loc;
 ListWall *head;
 Vector2 *mousePos;
 Vector2 *lastMousePos;
+Vector2 *playerPos;
+Vector2 *origin;
 
 int Init();
 void CreateGrid();
-void Player(unsigned int *VAO_Player, unsigned int *VBO_Player, unsigned int *VBO_Color_Player);
+void CreatePlayer(unsigned int *VAO_Player, unsigned int *VBO_Player, unsigned int *VBO_Color_Player);
+void Player();
 float ConvertToOpenGLX(float pCoord);
 float ConvertToOpenGLY(float pCoord);
 int CheckCollision(float pPosX, float pPosY);
@@ -96,6 +99,10 @@ int main(int argc, char *argv[])
 {
     mousePos = (Vector2 *)malloc(sizeof(Vector2));
     lastMousePos = (Vector2 *)malloc(sizeof(Vector2));
+    playerPos = (Vector2 *)malloc(sizeof(Vector2));
+    origin = (Vector2 *)malloc(sizeof(Vector2));
+    origin->X = ConvertToOpenGLX(WIDTH / 2 - PLAYERSIZE / 2);
+    origin->Y = ConvertToOpenGLY(HEIGHT / 2 - PLAYERSIZE / 2);
     if (Init() == 1)
         return 1;
 
@@ -130,7 +137,7 @@ int main(int argc, char *argv[])
     glGenVertexArrays(1, &VAO_Player);
     glBindVertexArray(VAO_Player);
 
-    Player(&VAO_Player, &VBO_Player, &VBO_Color_Player);
+    CreatePlayer(&VAO_Player, &VBO_Player, &VBO_Color_Player);
 
     glBindVertexArray(0);
     float crntTime, lastFrame;
@@ -162,12 +169,11 @@ int main(int argc, char *argv[])
         glClear(GL_COLOR_BUFFER_BIT);
         glUseProgram(Program);
 
-        Player(&VAO_Player, &VBO_Player, &VBO_Color_Player);
         glBindVertexArray(VAO_Grid);
         glDrawArrays(GL_TRIANGLES, 0, count);
         glUseProgram(Program);
-        if (timer > 5)
-            RotatePlayer();
+
+        Player();
 
         glBindVertexArray(VAO_Player);
         glDrawArrays(GL_TRIANGLES, 0, 6);
@@ -176,8 +182,11 @@ int main(int argc, char *argv[])
     }
     glfwDestroyWindow(window);
     glfwTerminate();
+
+    free(origin);
     free(mousePos);
     free(lastMousePos);
+    free(playerPos);
     FreeListWallMemory(head);
     return 0;
 }
@@ -315,18 +324,8 @@ float ConvertToOpenGLY(float pCoord)
     return (pCoord - HEIGHT / 2) / (HEIGHT / 2);
 }
 
-void Player(unsigned int *VAO_Player, unsigned int *VBO_Player, unsigned int *VBO_Color_Player)
+void CreatePlayer(unsigned int *VAO_Player, unsigned int *VBO_Player, unsigned int *VBO_Color_Player)
 {
-    if (glfwGetKey(window, GLFW_KEY_D) && CheckCollision(playerPosX + PLAYERSIZE + deltaTime * speed, playerPosY) == 0)
-        playerPosX += deltaTime * speed;
-    // Here A bc of qwerty
-    if (glfwGetKey(window, GLFW_KEY_A) && CheckCollision(playerPosX - deltaTime * speed, playerPosY) == 0)
-        playerPosX -= deltaTime * speed;
-    if (glfwGetKey(window, GLFW_KEY_W) && CheckCollision(playerPosX, playerPosY + PLAYERSIZE + deltaTime * speed) == 0)
-        playerPosY += deltaTime * speed;
-    if (glfwGetKey(window, GLFW_KEY_S) && CheckCollision(playerPosX, playerPosY - deltaTime * speed) == 0)
-        playerPosY -= deltaTime * speed;
-
     float xS[6] = {playerPosX, playerPosX, playerPosX + PLAYERSIZE, playerPosX, playerPosX + PLAYERSIZE, playerPosX + PLAYERSIZE};
     float yS[6] = {playerPosY, playerPosY + PLAYERSIZE, playerPosY + PLAYERSIZE, playerPosY, playerPosY, playerPosY + PLAYERSIZE};
     int index = 0;
@@ -353,14 +352,48 @@ void Player(unsigned int *VAO_Player, unsigned int *VBO_Player, unsigned int *VB
 
     glBindVertexArray(0);
 
+    glUniformMatrix4fv(loc, 1, GL_FALSE, model);
+}
+void Player()
+{
+    if (glfwGetKey(window, GLFW_KEY_D) && CheckCollision(playerPosX + PLAYERSIZE + cos(playerAngle) * deltaTime * speed, playerPosY + sin(playerAngle) * deltaTime * speed) == 0)
+    {
+        playerPosX += cos(playerAngle) * deltaTime * speed;
+        playerPosY -= sin(playerAngle) * deltaTime * speed;
+    }
+    // Here A bc of qwerty
+    if (glfwGetKey(window, GLFW_KEY_A) && CheckCollision(playerPosX - cos(playerAngle) * deltaTime * speed, playerPosY - sin(playerAngle) * deltaTime * speed) == 0)
+    {
+        playerPosX -= cos(playerAngle) * deltaTime * speed;
+        playerPosY += sin(playerAngle) * deltaTime * speed;
+    }
+    if (glfwGetKey(window, GLFW_KEY_S) && CheckCollision(playerPosX + sin(playerAngle) * deltaTime * speed, playerPosY + PLAYERSIZE - cos(playerAngle) * deltaTime * speed) == 0)
+    {
+        playerPosX -= sin(playerAngle) * deltaTime * speed;
+        playerPosY -= cos(playerAngle) * deltaTime * speed;
+    }
+    if (glfwGetKey(window, GLFW_KEY_W) && CheckCollision(playerPosX - sin(playerAngle) * deltaTime * speed, playerPosY + cos(playerAngle) * deltaTime * speed) == 0)
+    {
+        playerPosX += sin(playerAngle) * deltaTime * speed;
+        playerPosY += cos(playerAngle) * deltaTime * speed;
+    }
+
+    playerPos->X = ConvertToOpenGLX(playerPosX);
+    playerPos->Y = ConvertToOpenGLY(playerPosY);
+
+    MultiplyMatriceToVector(model, model, playerPos);
+
     lastMousePos->X = mousePos->X;
     lastMousePos->Y = mousePos->Y;
     glfwGetCursorPos(window, (double *)&mousePos->X, (double *)&mousePos->Y);
     if (IsMouseMoving() == 1)
         mouseSpeed = 0.0f;
     else
-        mouseSpeed = 0.005f;
-    playerAngle += mouseSpeed * deltaTime * (float)(WIDTH / 2 - (*mousePos).X);
+        mouseSpeed = 0.01f;
+    playerAngle += mouseSpeed * deltaTime * (float)(WIDTH / 2 - ((*mousePos).X));
+    RotatePlayer();
+
+    glUniformMatrix4fv(loc, 1, GL_FALSE, model);
 }
 
 int CheckCollision(float pPosX, float pPosY)
@@ -380,34 +413,17 @@ int CheckCollision(float pPosX, float pPosY)
 
 void RotatePlayer()
 {
-
-    float tmpModel[16] = {
+    float rotationMatrice[16] = {
         cos(playerAngle), -sin(playerAngle), 0, 0,
         sin(playerAngle), cos(playerAngle), 0, 0,
         0, 0, 1, 0,
         0, 0, 0, 1};
 
-    Vector2 *origin = (Vector2 *)malloc(sizeof(Vector2));
-    origin->X = ConvertToOpenGLX(WIDTH / 2 - PLAYERSIZE / 2);
-    origin->Y = ConvertToOpenGLY(HEIGHT / 2 - PLAYERSIZE / 2);
-
-    Vector2 *playerPos = (Vector2 *)malloc(sizeof(Vector2));
-    playerPos->X = ConvertToOpenGLX(playerPosX);
-    playerPos->Y = ConvertToOpenGLY(playerPosY);
-
     MultiplyMatriceToVector(model, model, origin);
-    MultiplyMatrices(model, model, tmpModel);
-    MultiplyMatriceToVector(model, model, playerPos);
-    for (int i = 0; i < 16; i++)
-    {
-        printf("%f  ", model[i]);
-        if (i % 4 == 0)
-            printf("\n");
-    }
-    printf("\n\n\n");
-    glUniformMatrix4fv(loc, 1, GL_FALSE, model);
-    free(origin);
-    free(playerPos);
+    MultiplyMatrices(model, model, rotationMatrice);
+    float toPlayer[16];
+    MultiplyMatriceToVector(toPlayer, toPlayer, playerPos);
+    MultiplyMatrices(model, model, toPlayer);
 }
 
 int IsMouseMoving()
@@ -435,19 +451,14 @@ void MultiplyMatrices(float result[], float a[], float b[])
 
 void MultiplyMatriceToVector(float result[], float a[], Vector2 *b)
 {
-    float vect[4] = {b->X, b->Y, 1, 0};
-    float tmp[16];
-    for (int i = 0; i < 4; i++)
-    {
-        float sum = 0.0f;
-        for (int j = 0; j < 4; j++)
-        {
-            sum += (a[i * 4 + j] * vect[j]);
-        }
-        result[i] = sum;
-        printf("%d\n", sum);
-    }
+    for (int i = 0; i < 16; i++)
+        result[i] = 0.0f;
+    result[0] = 1.0f;
+    result[5] = 1.0f;
+    result[10] = 1.0f;
+    result[15] = 1.0f;
 
-    // for (int l = 0; l < 16; l++)
-    //     result[l] = tmp[l];
+    result[12] = b->X;
+    result[13] = b->Y;
+    result[14] = 0.0f;
 }
