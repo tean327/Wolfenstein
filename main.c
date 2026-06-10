@@ -71,7 +71,23 @@ GLfloat color[] = {
     1.0f, 1.0f, 0.0f,
     1.0f, 1.0f, 0.0f};
 
-float deltaTime = 0.0f, playerPosX = 600, playerPosY = 400, playerAngle;
+GLfloat RayVertices[6 * 10];
+GLfloat RayColor[6 * 10] =
+    {
+        // First Point      Second
+        0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
+        0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
+        0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
+        0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
+        0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
+        0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
+        0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
+        0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
+        0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
+        0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f};
+
+float deltaTime = 0.0f,
+      playerPosX = 600, playerPosY = 400, playerAngle;
 float mouseSpeed = 0.005f;
 int speed = 100; // pixels
 
@@ -94,6 +110,7 @@ void RotatePlayer();
 int IsMouseMoving();
 void MultiplyMatrices(float result[], float a[], float b[]);
 void MultiplyMatriceToVector(float result[], float a[], Vector2 *b);
+void DrawRays(unsigned int *VAO_Player, unsigned int *VBO_Player, unsigned int *VBO_Color_Player);
 
 int main(int argc, char *argv[])
 {
@@ -114,7 +131,7 @@ int main(int argc, char *argv[])
     CreateGrid();
 
     glUseProgram(Program);
-    unsigned int VBOVertices, VBOColor, VBO_Player, VBO_Color_Player, VAO_Grid, VAO_Player;
+    unsigned int VBOVertices, VBOColor, VBO_Player, VBO_Color_Player, VBO_RayVertices, VBO_RayColor, VAO_Grid, VAO_Player, VAO_Rays;
     glGenVertexArrays(1, &VAO_Grid);
     glBindVertexArray(VAO_Grid);
 
@@ -140,6 +157,10 @@ int main(int argc, char *argv[])
     CreatePlayer(&VAO_Player, &VBO_Player, &VBO_Color_Player);
 
     glBindVertexArray(0);
+
+    glGenVertexArrays(1, &VAO_Rays);
+    DrawRays(&VAO_Rays, &VBO_RayVertices, &VBO_RayColor);
+
     float crntTime, lastFrame;
 
     glClearColor(1.0f, 0.5f, 0.7f, 1.0f);
@@ -177,6 +198,13 @@ int main(int argc, char *argv[])
 
         glBindVertexArray(VAO_Player);
         glDrawArrays(GL_TRIANGLES, 0, 6);
+
+        glBindVertexArray(0);
+
+        DrawRays(&VAO_Rays, &VBO_RayVertices, &VBO_RayColor);
+        glBindVertexArray(VAO_Rays);
+        glDrawArrays(GL_LINES, 0, sizeof(RayVertices) / sizeof(RayVertices[0]) * 2);
+
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
@@ -378,19 +406,18 @@ void Player()
         playerPosY += cos(playerAngle) * deltaTime * speed;
     }
 
+    // Reset if the player is locked somewhere
+    if (glfwGetKey(window, GLFW_KEY_F))
+    {
+        playerPosX = WIDTH / 2;
+        playerPosY = HEIGHT / 2;
+        playerAngle = 0;
+    }
     playerPos->X = ConvertToOpenGLX(playerPosX);
     playerPos->Y = ConvertToOpenGLY(playerPosY);
 
     MultiplyMatriceToVector(model, model, playerPos);
 
-    lastMousePos->X = mousePos->X;
-    lastMousePos->Y = mousePos->Y;
-    glfwGetCursorPos(window, (double *)&mousePos->X, (double *)&mousePos->Y);
-    if (IsMouseMoving() == 1)
-        mouseSpeed = 0.0f;
-    else
-        mouseSpeed = 0.01f;
-    playerAngle += mouseSpeed * deltaTime * (float)(WIDTH / 2 - ((*mousePos).X));
     RotatePlayer();
 
     glUniformMatrix4fv(loc, 1, GL_FALSE, model);
@@ -413,6 +440,21 @@ int CheckCollision(float pPosX, float pPosY)
 
 void RotatePlayer()
 {
+    if (glfwGetKey(window, GLFW_KEY_LEFT))
+        playerAngle += deltaTime;
+    if (glfwGetKey(window, GLFW_KEY_RIGHT))
+        playerAngle -= deltaTime;
+
+    lastMousePos->X = mousePos->X;
+    lastMousePos->Y = mousePos->Y;
+    glfwGetCursorPos(window, (double *)&mousePos->X, (double *)&mousePos->Y);
+    if (IsMouseMoving() == 1)
+        mouseSpeed = 0.0f;
+    else
+        mouseSpeed = 0.01f;
+    // mouseSpeed = mousePos->X > lastMousePos->X ? mouseSpeed : -mouseSpeed;
+    playerAngle += mouseSpeed * deltaTime * (float)(WIDTH / 2 - ((*mousePos).X));
+
     float rotationMatrice[16] = {
         cos(playerAngle), -sin(playerAngle), 0, 0,
         sin(playerAngle), cos(playerAngle), 0, 0,
@@ -431,6 +473,51 @@ int IsMouseMoving()
     if (lastMousePos->X != mousePos->X)
         return 0;
     return 1;
+}
+
+void DrawRays(unsigned int *VAO_Ray, unsigned int *VBO_RayVertices, unsigned int *VBO_Color)
+{
+    int numberOfRays = 10;
+    float startAngle = playerAngle - 3.14f / 2;
+    float finishAngle = playerAngle + 3.14f / 2;
+    float diffAngle = (finishAngle - startAngle) / numberOfRays;
+    for (int i = 0, j = 0; i < numberOfRays; i++, j += 6)
+    {
+        float angle = startAngle + diffAngle * i;
+        RayVertices[j] = playerPos->X;
+        RayVertices[j + 1] = playerPos->Y;
+        RayVertices[j + 2] = 0.0f;
+        float x = playerPosX;
+        float y = playerPosY;
+        int xFactor = WIDTH / 10;
+        int iteration = 0;
+        // printf("COLLISION: %d\n", CheckCollision(x, y) == 0 && iteration < 8);
+        while (CheckCollision(x, y) == 0 && iteration < 8)
+        {
+            iteration++;
+            x += xFactor;
+            y += sin(angle) * xFactor / cos(angle);
+        }
+
+        RayVertices[j + 3] = ConvertToOpenGLX(x);
+        RayVertices[j + 4] = ConvertToOpenGLY(y);
+        RayVertices[j + 5] = 0.0f;
+    }
+
+    glBindVertexArray(*VAO_Ray);
+    glGenBuffers(1, VBO_RayVertices);
+    glBindBuffer(GL_ARRAY_BUFFER, *VBO_RayVertices);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(RayVertices), RayVertices, GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0);
+    glEnableVertexAttribArray(0);
+
+    glGenBuffers(1, VBO_Color);
+    glBindBuffer(GL_ARRAY_BUFFER, *VBO_Color);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(RayColor), RayColor, GL_STATIC_DRAW);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0);
+    glEnableVertexAttribArray(1);
+
+    glBindVertexArray(0);
 }
 
 void MultiplyMatrices(float result[], float a[], float b[])
