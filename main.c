@@ -7,7 +7,7 @@
 #define HEIGHT 800
 #define GRID_HEIGHT 8
 #define GRID_WIDTH 10
-#define NUMBER_OF_RAYS 60
+#define NUMBER_OF_RAYS 180
 
 #define PLAYERSIZE 20
 #define PI 3.141592653589793
@@ -196,7 +196,12 @@ int main(int argc, char *argv[])
 
         glBindVertexArray(VAO_Grid);
         glDrawArrays(GL_TRIANGLES, 0, count);
-        glUseProgram(Program);
+
+        DrawRays(&VAO_Rays, &VBO_RayVertices, &VBO_RayColor);
+
+        glBindVertexArray(VAO_Rays);
+        glDrawArrays(GL_LINES, 0, NUMBER_OF_RAYS * 2);
+        glBindVertexArray(0);
 
         Player();
 
@@ -204,10 +209,6 @@ int main(int argc, char *argv[])
         glDrawArrays(GL_TRIANGLES, 0, 6);
 
         glBindVertexArray(0);
-
-        DrawRays(&VAO_Rays, &VBO_RayVertices, &VBO_RayColor);
-        glBindVertexArray(VAO_Rays);
-        glDrawArrays(GL_LINES, 0, NUMBER_OF_RAYS * 2);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
