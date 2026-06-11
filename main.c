@@ -540,21 +540,24 @@ void DrawRays(unsigned int *VAO_Ray, unsigned int *VBO_RayVertices, unsigned int
         float x = playerPosX;
         float y = playerPosY;
         int iteration = 0;
-        int distance = 15;
-        while (ReturnCollisionPos(x, y) == NULL && iteration < 8 * 10)
+        int distance = 5;
+
+        Vector2 *lVector = NULL;
+        while (lVector == NULL && iteration < (8 * 10 * 5 / distance))
         {
+            lVector = ReturnCollisionPos(x, y);
             iteration++;
             x += distance * cos(angle);
             y -= distance * sin(angle);
         }
 
-        if (iteration < 8 * 10)
+        if (lVector != NULL)
         {
-            Vector2 *lVector = ReturnCollisionPos(x, y);
             x = lVector->X;
             y = lVector->Y;
-            free(lVector);
         }
+
+        free(lVector);
 
         RayVertices[j + 3] = ConvertToOpenGLX(x);
         RayVertices[j + 4] = ConvertToOpenGLY(y);
