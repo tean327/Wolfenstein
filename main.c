@@ -5,9 +5,15 @@
 #include "LinkedList.h"
 #define WIDTH 1200
 #define HEIGHT 800
+#define GRID_HEIGHT 8
+#define GRID_WIDTH 10
+#define NUMBER_OF_RAYS 60
 
 #define PLAYERSIZE 20
 #define PI 3.141592653589793
+
+int TileSizeX;
+int TileSizeY;
 
 float model[16] = {1, 0, 0, 0,
                    0, 1, 0, 0,
@@ -48,7 +54,7 @@ const char *vertex = "#version 330 core\n"
                      "}\n";
 
 GLFWwindow *window;
-int map[8][10] = {
+int map[GRID_HEIGHT][GRID_WIDTH] = {
     {1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
     {1, 0, 0, 0, 0, 0, 0, 0, 1, 1},
     {1, 0, 0, 0, 1, 0, 1, 1, 0, 1},
@@ -58,8 +64,8 @@ int map[8][10] = {
     {1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
     {1, 1, 1, 1, 1, 1, 1, 1, 1, 1}};
 
-GLfloat gridVertices[3 * 6 * 8 * 10];
-GLfloat gridColor[3 * 6 * 8 * 10];
+GLfloat gridVertices[3 * 6 * GRID_HEIGHT * GRID_WIDTH];
+GLfloat gridColor[3 * 6 * GRID_HEIGHT * GRID_WIDTH];
 GLuint Program;
 
 GLfloat vertices[18];
@@ -71,20 +77,8 @@ GLfloat color[] = {
     1.0f, 1.0f, 0.0f,
     1.0f, 1.0f, 0.0f};
 
-GLfloat RayVertices[6 * 10];
-GLfloat RayColor[6 * 10] =
-    {
-        // First Point      Second
-        0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
-        0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
-        0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
-        0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
-        0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
-        0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
-        0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
-        0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
-        0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
-        0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f};
+GLfloat RayVertices[6 * NUMBER_OF_RAYS];
+GLfloat RayColor[6 * NUMBER_OF_RAYS];
 
 float deltaTime = 0.0f,
       playerPosX = 600, playerPosY = 400, playerAngle;
@@ -106,6 +100,7 @@ void Player();
 float ConvertToOpenGLX(float pCoord);
 float ConvertToOpenGLY(float pCoord);
 int CheckCollision(float pPosX, float pPosY);
+Vector2 *ReturnCollisionPos(float pPosX, float pPosY);
 void RotatePlayer();
 int IsMouseMoving();
 void MultiplyMatrices(float result[], float a[], float b[]);
@@ -123,6 +118,15 @@ int main(int argc, char *argv[])
     if (Init() == 1)
         return 1;
 
+    for (int i = 0; i < NUMBER_OF_RAYS * 6; i += 6)
+    {
+        RayColor[i] = 0.0f;
+        RayColor[i + 1] = 1.0f;
+        RayColor[i + 2] = 0.0f;
+        RayColor[i + 3] = 0.0f;
+        RayColor[i + 4] = 1.0f;
+        RayColor[i + 5] = 0.0f;
+    }
     // Tell opengl the area of our window so that we can make changes after
     glViewport(0, 0, WIDTH, HEIGHT);
 
@@ -203,7 +207,7 @@ int main(int argc, char *argv[])
 
         DrawRays(&VAO_Rays, &VBO_RayVertices, &VBO_RayColor);
         glBindVertexArray(VAO_Rays);
-        glDrawArrays(GL_LINES, 0, sizeof(RayVertices) / sizeof(RayVertices[0]) * 2);
+        glDrawArrays(GL_LINES, 0, NUMBER_OF_RAYS * 2);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -270,18 +274,19 @@ int Init()
 void CreateGrid()
 {
     int index = 0;
-    int xFactor = WIDTH / 10;
-    int yFactor = HEIGHT / 8;
+    TileSizeX = WIDTH / GRID_WIDTH;
+    // int yFactor
+    TileSizeY = HEIGHT / GRID_HEIGHT;
     head = (ListWall *)malloc(sizeof(ListWall));
     head->next = NULL;
     head->VALUE = NULL;
-    for (int x = 0; x < WIDTH; x += xFactor)
+    for (int x = 0; x < WIDTH; x += TileSizeX)
     {
-        for (int y = 0; y < HEIGHT; y += yFactor)
+        for (int y = 0; y < HEIGHT; y += TileSizeY)
         {
-            float xS[6] = {x, x, x + xFactor - 5, x, x + xFactor - 5, x + xFactor - 5};
-            float yS[6] = {y, y + yFactor - 5, y + yFactor - 5, y, y, y + yFactor - 5};
-            switch (map[(y / yFactor)][(x / xFactor)])
+            float xS[6] = {x, x, x + TileSizeX - 5, x, x + TileSizeX - 5, x + TileSizeX - 5};
+            float yS[6] = {y, y + TileSizeY - 5, y + TileSizeY - 5, y, y, y + TileSizeY - 5};
+            switch (map[(y / TileSizeY)][(x / TileSizeX)])
             {
             case 0:
                 // Create floor
@@ -295,7 +300,7 @@ void CreateGrid()
                     gridVertices[index++] = ConvertToOpenGLY(yS[i]);
                     gridColor[index] = 0.0f;
                     gridVertices[index] = 0.0f;
-                    if (index + 1 <= 3 * 6 * 8 * 10)
+                    if (index + 1 <= 3 * 6 * GRID_HEIGHT * GRID_WIDTH)
                         index++;
                     else
                         break;
@@ -310,17 +315,17 @@ void CreateGrid()
                 lPos->Y = y;
 
                 Vector2 *lSize = (Vector2 *)malloc(sizeof(Vector2));
-                lSize->X = x + xFactor;
-                lSize->Y = y + yFactor;
+                lSize->X = x + TileSizeX;
+                lSize->Y = y + TileSizeY;
 
                 Wall *lWall = (Wall *)malloc(sizeof(Wall));
                 lWall->position = lPos;
                 lWall->size = lSize;
 
-                lWall->posX = x;
-                lWall->posY = y;
-                lWall->sizeX = x + xFactor;
-                lWall->sizeY = y + yFactor;
+                lWall->position->X = x;
+                lWall->position->Y = y;
+                lWall->size->X = x + TileSizeX;
+                lWall->size->Y = y + TileSizeY;
                 AddAtEndOfListWall(lWall, head);
                 for (int i = 0; i < 6; i++)
                 {
@@ -382,6 +387,7 @@ void CreatePlayer(unsigned int *VAO_Player, unsigned int *VBO_Player, unsigned i
 
     glUniformMatrix4fv(loc, 1, GL_FALSE, model);
 }
+
 void Player()
 {
     if (glfwGetKey(window, GLFW_KEY_D) && CheckCollision(playerPosX + PLAYERSIZE + cos(playerAngle) * deltaTime * speed, playerPosY + sin(playerAngle) * deltaTime * speed) == 0)
@@ -438,6 +444,46 @@ int CheckCollision(float pPosX, float pPosY)
     return 0;
 }
 
+Vector2 *ReturnCollisionPos(float pPosX, float pPosY)
+{
+    ListWall *searchNode = (ListWall *)malloc(sizeof(ListWall));
+    searchNode = head->next;
+    while (searchNode->next != NULL)
+    {
+        if ((*searchNode).VALUE->position->X <= pPosX && (*searchNode).VALUE->size->X >= pPosX && (*searchNode).VALUE->position->Y <= pPosY && (*searchNode).VALUE->size->Y >= pPosY)
+        {
+            Wall *lWall = searchNode->VALUE;
+            Vector2 *lVector = (Vector2 *)malloc(sizeof(Vector2));
+            float distLeft = fabs(pPosX - lWall->position->X);
+            float distRight = fabs(lWall->size->X - pPosX);
+            float distTop = fabs(pPosY - lWall->position->Y);
+            float distBottom = fabs(lWall->size->Y - pPosY);
+
+            float minDist = distLeft;
+            lVector->X = lWall->position->X;
+            lVector->Y = pPosY;
+            if (distTop < minDist)
+            {
+                lVector->X = pPosX;
+                lVector->Y = lWall->position->Y;
+            }
+            if (distBottom < minDist)
+            {
+                lVector->X = pPosX;
+                lVector->Y = lWall->size->Y;
+            }
+            if (distRight < minDist)
+            {
+                lVector->X = lWall->size->X;
+                lVector->Y = pPosY;
+            }
+            return lVector;
+        }
+        searchNode = searchNode->next;
+    }
+    return NULL;
+}
+
 void RotatePlayer()
 {
     if (glfwGetKey(window, GLFW_KEY_LEFT))
@@ -452,8 +498,12 @@ void RotatePlayer()
         mouseSpeed = 0.0f;
     else
         mouseSpeed = 0.01f;
-    // mouseSpeed = mousePos->X > lastMousePos->X ? mouseSpeed : -mouseSpeed;
     playerAngle += mouseSpeed * deltaTime * (float)(WIDTH / 2 - ((*mousePos).X));
+
+    if (playerAngle > 2 * PI)
+        playerAngle = 0;
+    if (playerAngle < 0)
+        playerAngle = 2 * PI;
 
     float rotationMatrice[16] = {
         cos(playerAngle), -sin(playerAngle), 0, 0,
@@ -477,11 +527,10 @@ int IsMouseMoving()
 
 void DrawRays(unsigned int *VAO_Ray, unsigned int *VBO_RayVertices, unsigned int *VBO_Color)
 {
-    int numberOfRays = 10;
-    float startAngle = playerAngle - 3.14f / 2;
-    float finishAngle = playerAngle + 3.14f / 2;
-    float diffAngle = (finishAngle - startAngle) / numberOfRays;
-    for (int i = 0, j = 0; i < numberOfRays; i++, j += 6)
+    float startAngle = playerAngle - PI / 2;
+    float finishAngle = playerAngle + PI / 2;
+    float diffAngle = (finishAngle - startAngle) / NUMBER_OF_RAYS;
+    for (int i = 0, j = 0; i < NUMBER_OF_RAYS; i++, j += 6)
     {
         float angle = startAngle + diffAngle * i;
         RayVertices[j] = playerPos->X;
@@ -489,14 +538,21 @@ void DrawRays(unsigned int *VAO_Ray, unsigned int *VBO_RayVertices, unsigned int
         RayVertices[j + 2] = 0.0f;
         float x = playerPosX;
         float y = playerPosY;
-        int xFactor = WIDTH / 10;
         int iteration = 0;
-        // printf("COLLISION: %d\n", CheckCollision(x, y) == 0 && iteration < 8);
-        while (CheckCollision(x, y) == 0 && iteration < 8)
+        int distance = 15;
+        while (ReturnCollisionPos(x, y) == NULL && iteration < 8 * 10)
         {
             iteration++;
-            x += xFactor;
-            y += sin(angle) * xFactor / cos(angle);
+            x += distance * cos(angle);
+            y -= distance * sin(angle);
+        }
+
+        if (iteration < 8 * 10)
+        {
+            Vector2 *lVector = ReturnCollisionPos(x, y);
+            x = lVector->X;
+            y = lVector->Y;
+            free(lVector);
         }
 
         RayVertices[j + 3] = ConvertToOpenGLX(x);

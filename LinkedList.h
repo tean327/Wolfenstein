@@ -12,10 +12,6 @@ typedef struct nodeVector2
 typedef struct nodeWall
 {
     Vector2 *position;
-    int posX;
-    int posY;
-    int sizeX;
-    int sizeY;
     Vector2 *size;
 } Wall;
 
