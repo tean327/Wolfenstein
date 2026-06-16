@@ -15,11 +15,13 @@ typedef struct nodeWall
     Vector2 *size;
 } Wall;
 
-typedef struct ListIntNode
+typedef struct nodeRay
 {
-    int VALUE;
-    struct ListIntNode *next;
-} ListInt;
+    Vector2 *pointA;
+    Vector2 *pointB;
+    float norme;
+    float rayAngle;
+} Ray;
 
 typedef struct ListWallNode
 {
@@ -28,12 +30,6 @@ typedef struct ListWallNode
 } ListWall;
 
 #pragma endregion
-
-// Int list functions
-void AddAtEndOfListInt(int value, ListInt *head);
-int IsInsideListInt(ListInt *head, int value);
-ListInt *GetListIntNodeFromValue(ListInt *head, int value);
-void FreeListIntMemory(ListInt *head);
 
 void AddAtEndOfListWall(Wall *value, ListWall *head);
 int IsInsideListWall(ListWall *head, Wall *value);
