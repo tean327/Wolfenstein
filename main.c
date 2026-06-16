@@ -8,7 +8,7 @@
 #define GRID_HEIGHT 8
 #define GRID_WIDTH 10
 #define NUMBER_OF_RAYS 360
-#define FOV PI / 2
+#define FOV PI / 3
 
 #define PLAYERSIZE 20
 #define PI 3.141592653589793
@@ -25,15 +25,6 @@ float view[16] = {1, 0, 0, 0,
                   0, 1, 0, 0,
                   0, 0, 1, 0,
                   0, 0, 0, 1};
-
-float projection[16] = {1, 0, 0, 0,
-                        0, 1, 0, 0,
-                        0, 0, 1, 0,
-                        0, 0, 0, 1};
-float mvp[16] = {1, 0, 0, 0,
-                 0, 1, 0, 0,
-                 0, 0, 1, 0,
-                 0, 0, 0, 1};
 
 const char *fragment = "#version 330 core\n"
                        "out vec4 FragColor;\n"
@@ -445,7 +436,7 @@ void Player()
     }
 
     // Reset if the player is locked somewhere
-    if (glfwGetKey(window, GLFW_KEY_F))
+    if (KeyPressed(GLFW_KEY_F))
     {
         playerPosX = WIDTH / 2;
         playerPosY = HEIGHT / 2;
@@ -571,7 +562,7 @@ void DrawRays(unsigned int *VAO_Ray, unsigned int *VBO_RayVertices, unsigned int
         float x = playerPosX;
         float y = playerPosY;
         int iteration = 0;
-        int distance = 10;
+        int distance = 1;
 
         Vector2 *lVector = NULL;
         while (lVector == NULL && iteration < (8 * 10 * 20 / distance))
@@ -582,11 +573,6 @@ void DrawRays(unsigned int *VAO_Ray, unsigned int *VBO_RayVertices, unsigned int
             y -= distance * sin(angle);
         }
 
-        if (lVector != NULL)
-        {
-            x = lVector->X;
-            y = lVector->Y;
-        }
         RayVertices[j + 3] = ConvertToOpenGLX(x);
         RayVertices[j + 4] = ConvertToOpenGLY(y);
         RayVertices[j + 5] = 0.0f;
@@ -611,16 +597,22 @@ void Create3DWalls(unsigned int *VAO_Walls, unsigned int *VBO_Walls, unsigned in
 {
     float zoom = 0.01f; // the smaller this is the bigger the walls will be
     float projPlaneDist = (WIDTH / 2.0f) / tanf(FOV / 2.0f);
-    int xFactor = WIDTH / NUMBER_OF_RAYS;
+
     int index = 0;
     int indexColor = 0;
     for (int i = 0; i < NUMBER_OF_RAYS; i++)
     {
+        int xLeft = (int)((float)WIDTH * i / NUMBER_OF_RAYS);
+        int xRight = (int)((float)WIDTH * (i + 1) / NUMBER_OF_RAYS);
+
         float wallHeight = projPlaneDist / (rays[i]->norme * zoom);
         float yTop = HEIGHT / 2 - wallHeight / 2;
         float yBottom = yTop + wallHeight;
 
-        float xS[6] = {xFactor * i, xFactor * i, xFactor * (i + 1), xFactor * i, xFactor * (i + 1), xFactor * (i + 1)};
+        float xS[6] = {
+            xLeft, xLeft, xRight,
+            xLeft, xRight, xRight};
+
         float yS[6] = {yTop, yBottom, yBottom, yTop, yTop, yBottom};
 
         for (int j = 0; j < 6; j++)
@@ -634,11 +626,10 @@ void Create3DWalls(unsigned int *VAO_Walls, unsigned int *VBO_Walls, unsigned in
             Wall3DColor[indexColor++] = 1.0f;
         }
     }
+
     glBindVertexArray(*VAO_Walls);
     glBindBuffer(GL_ARRAY_BUFFER, *VBO_Walls);
     glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(Wall3DVert), Wall3DVert);
-    glBindBuffer(GL_ARRAY_BUFFER, *VBO_Color_Walls);
-    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(Wall3DColor), Wall3DColor);
 }
 
 void MultiplyMatrices(float result[], float a[], float b[])
@@ -674,7 +665,6 @@ void MultiplyMatriceToVector(float result[], float a[], Vector2 *b)
 float CalculRayDistance(float xA, float yA, float xB, float yB, float rayAngle)
 {
     float normalRayDistance = sqrt(pow(xB - xA, 2) + pow(yB - yA, 2));
-    float returnValue = normalRayDistance * cos(rayAngle - playerAngle);
     return normalRayDistance * cos(rayAngle - playerAngle);
 }
 
