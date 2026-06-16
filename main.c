@@ -7,7 +7,8 @@
 #define HEIGHT 800
 #define GRID_HEIGHT 8
 #define GRID_WIDTH 10
-#define NUMBER_OF_RAYS 180
+#define NUMBER_OF_RAYS 360
+#define FOV PI / 2
 
 #define PLAYERSIZE 20
 #define PI 3.141592653589793
@@ -422,23 +423,22 @@ void CreatePlayer(unsigned int *VAO_Player, unsigned int *VBO_Player, unsigned i
 
 void Player()
 {
-    if (KeyPressed(GLFW_KEY_D) && CheckCollision(playerPosX + PLAYERSIZE + cos(playerAngle) * deltaTime * speed, playerPosY + sin(playerAngle) * deltaTime * speed) == 0)
+    if (KeyPressed(GLFW_KEY_W) && CheckCollision(playerPosX + PLAYERSIZE + cos(playerAngle) * deltaTime * speed, playerPosY + sin(playerAngle) * deltaTime * speed) == 0)
     {
         playerPosX += cos(playerAngle) * deltaTime * speed;
         playerPosY -= sin(playerAngle) * deltaTime * speed;
     }
-    // Here A bc of qwerty
-    if (KeyPressed(GLFW_KEY_A) && CheckCollision(playerPosX - cos(playerAngle) * deltaTime * speed, playerPosY - sin(playerAngle) * deltaTime * speed) == 0)
+    if (KeyPressed(GLFW_KEY_S) && CheckCollision(playerPosX - cos(playerAngle) * deltaTime * speed, playerPosY - sin(playerAngle) * deltaTime * speed) == 0)
     {
         playerPosX -= cos(playerAngle) * deltaTime * speed;
         playerPosY += sin(playerAngle) * deltaTime * speed;
     }
-    if (KeyPressed(GLFW_KEY_S) && CheckCollision(playerPosX + sin(playerAngle) * deltaTime * speed, playerPosY + PLAYERSIZE - cos(playerAngle) * deltaTime * speed) == 0)
+    if (KeyPressed(GLFW_KEY_D) && CheckCollision(playerPosX + sin(playerAngle) * deltaTime * speed, playerPosY + PLAYERSIZE - cos(playerAngle) * deltaTime * speed) == 0)
     {
         playerPosX -= sin(playerAngle) * deltaTime * speed;
         playerPosY -= cos(playerAngle) * deltaTime * speed;
     }
-    if (KeyPressed(GLFW_KEY_W) && CheckCollision(playerPosX - sin(playerAngle) * deltaTime * speed, playerPosY + cos(playerAngle) * deltaTime * speed) == 0)
+    if (KeyPressed(GLFW_KEY_A) && CheckCollision(playerPosX - sin(playerAngle) * deltaTime * speed, playerPosY + cos(playerAngle) * deltaTime * speed) == 0)
     {
         playerPosX += sin(playerAngle) * deltaTime * speed;
         playerPosY += cos(playerAngle) * deltaTime * speed;
@@ -559,9 +559,9 @@ int IsMouseMoving()
 
 void DrawRays(unsigned int *VAO_Ray, unsigned int *VBO_RayVertices, unsigned int *VBO_Color)
 {
-    float startAngle = playerAngle - PI / 2;
-    float finishAngle = playerAngle + PI / 2;
-    float diffAngle = (finishAngle - startAngle) / NUMBER_OF_RAYS;
+    float startAngle = playerAngle - FOV / 2;
+    float finishAngle = playerAngle + FOV / 2;
+    float diffAngle = (FOV) / NUMBER_OF_RAYS;
     for (int i = 0, j = 0; i < NUMBER_OF_RAYS; i++, j += 6)
     {
         float angle = startAngle + diffAngle * i;
@@ -609,14 +609,14 @@ void DrawRays(unsigned int *VAO_Ray, unsigned int *VBO_RayVertices, unsigned int
 
 void Create3DWalls(unsigned int *VAO_Walls, unsigned int *VBO_Walls, unsigned int *VBO_Color_Walls)
 {
-    float FOV = 90.0f * (PI / 180.0f);
-    float projPlaneDist = (WIDTH) / tanf(FOV / 2.0f);
+    float zoom = 0.01f; // the smaller this is the bigger the walls will be
+    float projPlaneDist = (WIDTH / 2.0f) / tanf(FOV / 2.0f);
     int xFactor = WIDTH / NUMBER_OF_RAYS;
     int index = 0;
     int indexColor = 0;
     for (int i = 0; i < NUMBER_OF_RAYS; i++)
     {
-        float wallHeight = projPlaneDist / rays[i]->norme;
+        float wallHeight = projPlaneDist / (rays[i]->norme * zoom);
         float yTop = HEIGHT / 2 - wallHeight / 2;
         float yBottom = yTop + wallHeight;
 
