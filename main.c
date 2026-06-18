@@ -21,7 +21,7 @@ float model[16] = {1, 0, 0, 0,
                    0, 0, 1, 0,
                    0, 0, 0, 1};
 
-float view[16] = {1, 0, 0, 0,
+float mat1[16] = {1, 0, 0, 0,
                   0, 1, 0, 0,
                   0, 0, 1, 0,
                   0, 0, 0, 1};
@@ -171,6 +171,7 @@ int main(int argc, char *argv[])
     glBindVertexArray(0);
 
     glfwMakeContextCurrent(window3D);
+    glUseProgram(Program);
     glGenVertexArrays(1, &VAO_Walls);
     CreateWallsVAOsVBOs(&VAO_Walls, &VBO_3D_Vert, &VBO_3D_Color);
 
@@ -185,7 +186,6 @@ int main(int argc, char *argv[])
     glBindVertexArray(VAO_Player);
     glfwSwapBuffers(window);
 
-    float timer;
     loc = glGetUniformLocation(Program, "mvp");
 
     while (!glfwWindowShouldClose(window) && !glfwWindowShouldClose(window3D))
@@ -193,13 +193,12 @@ int main(int argc, char *argv[])
         glfwMakeContextCurrent(window);
 
         for (int i = 0; i < 16; i++)
-            model[i] = view[i];
+            model[i] = mat1[i];
         glUniformMatrix4fv(loc, 1, GL_FALSE, model);
         crntTime = glfwGetTime();
         deltaTime = crntTime - lastFrame;
         lastFrame = crntTime;
 
-        timer += deltaTime;
         glClearColor(1.0f, 0.5f, 0.7f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
         glUseProgram(Program);
@@ -229,6 +228,7 @@ int main(int argc, char *argv[])
         Create3DWalls(&VAO_Walls, &VBO_3D_Vert, &VBO_3D_Color);
         glBindVertexArray(VAO_Walls);
         glDrawArrays(GL_TRIANGLES, 0, NUMBER_OF_RAYS * 6);
+        glBindVertexArray(0);
         glfwSwapBuffers(window3D);
 
         glfwPollEvents();
@@ -237,6 +237,13 @@ int main(int argc, char *argv[])
     glfwDestroyWindow(window);
     glfwDestroyWindow(window3D);
     glfwTerminate();
+
+    for (int i = 0; i < NUMBER_OF_RAYS; i++)
+    {
+        free(rays[i]->pointA);
+        free(rays[i]->pointB);
+        free(rays[i]);
+    }
 
     free(origin);
     free(mousePos);
@@ -299,7 +306,6 @@ void CreateGrid()
 {
     int index = 0;
     TileSizeX = WIDTH / GRID_WIDTH;
-    // int yFactor
     TileSizeY = HEIGHT / GRID_HEIGHT;
     head = (ListWall *)malloc(sizeof(ListWall));
     head->next = NULL;
@@ -464,6 +470,7 @@ int CheckCollision(float pPosX, float pPosY)
         }
         searchNode = searchNode->next;
     }
+    free(searchNode);
     return 0;
 }
 
@@ -504,6 +511,7 @@ Vector2 *ReturnCollisionPos(float pPosX, float pPosY)
         }
         searchNode = searchNode->next;
     }
+    free(searchNode);
     return NULL;
 }
 
@@ -577,6 +585,13 @@ void DrawRays(unsigned int *VAO_Ray, unsigned int *VBO_RayVertices, unsigned int
         RayVertices[j + 4] = ConvertToOpenGLY(y);
         RayVertices[j + 5] = 0.0f;
 
+        if (rays[i] != NULL)
+        {
+            free(rays[i]->pointA);
+            free(rays[i]->pointB);
+            free(rays[i]);
+        }
+
         Ray *lRay = (Ray *)malloc(sizeof(Ray));
         Vector2 *lPointA = (Vector2 *)malloc(sizeof(Vector2));
         lPointA->X = playerPosX;
@@ -630,6 +645,10 @@ void Create3DWalls(unsigned int *VAO_Walls, unsigned int *VBO_Walls, unsigned in
     glBindVertexArray(*VAO_Walls);
     glBindBuffer(GL_ARRAY_BUFFER, *VBO_Walls);
     glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(Wall3DVert), Wall3DVert);
+
+    glBindBuffer(GL_ARRAY_BUFFER, *VBO_Color_Walls);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(Wall3DColor), Wall3DColor);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 void MultiplyMatrices(float result[], float a[], float b[])
@@ -692,13 +711,13 @@ void CreateWallsVAOsVBOs(unsigned int *VAO_Wall, unsigned int *VBO_Wall_Vertices
     glGenBuffers(1, VBO_Wall_Vertices);
     glBindBuffer(GL_ARRAY_BUFFER, *VBO_Wall_Vertices);
     glBufferData(GL_ARRAY_BUFFER, sizeof(Wall3DVert), Wall3DVert, GL_DYNAMIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void *)0);
     glEnableVertexAttribArray(0);
 
     glGenBuffers(1, VBO_Color);
     glBindBuffer(GL_ARRAY_BUFFER, *VBO_Color);
     glBufferData(GL_ARRAY_BUFFER, sizeof(Wall3DColor), Wall3DColor, GL_DYNAMIC_DRAW);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void *)0);
     glEnableVertexAttribArray(1);
 
     glBindVertexArray(0);

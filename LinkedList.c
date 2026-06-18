@@ -79,6 +79,9 @@ void FreeListWallMemory(ListWall *head)
     {
         tmp = head;
         head = head->next;
+        free(tmp->VALUE->position);
+        free(tmp->VALUE->size);
+        free(tmp->VALUE);
         free(tmp);
     }
 }
