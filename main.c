@@ -3,6 +3,7 @@
 #include "Librairies\include\glad\glad.h"
 #include "Librairies\include\GLFW\glfw3.h"
 #include "LinkedList.h"
+#include "mathFuncs.h"
 #define WIDTH 1200
 #define HEIGHT 800
 #define GRID_HEIGHT 8
@@ -95,16 +96,16 @@ int Init();
 void CreateGrid();
 void CreatePlayer(unsigned int *VAO_Player, unsigned int *VBO_Player, unsigned int *VBO_Color_Player);
 void Player();
-float ConvertToOpenGLX(float pCoord);
-float ConvertToOpenGLY(float pCoord);
+// float ConvertToOpenGLX(float pCoord);
+// float ConvertToOpenGLY(float pCoord);
 int CheckCollision(float pPosX, float pPosY);
 Vector2 *ReturnCollisionPos(float pPosX, float pPosY);
 void RotatePlayer();
 int IsMouseMoving();
-void MultiplyMatrices(float result[], float a[], float b[]);
-void MultiplyMatriceToVector(float result[], float a[], Vector2 *b);
+// void MultiplyMatrices(float result[], float a[], float b[]);
+// void MultiplyMatriceToVector(float result[], float a[], Vector2 *b);
 void DrawRays(unsigned int *VAO_Player, unsigned int *VBO_Player, unsigned int *VBO_Color_Player);
-float CalculRayDistance(float xA, float yA, float xB, float yB, float rayAngle);
+// float CalculRayDistance(float xA, float yA, float xB, float yB, float rayAngle);
 void Create3DWalls(unsigned int *VAO_Walls, unsigned int *VBO_Walls, unsigned int *VBO_Color_Walls);
 void CreateRayVAOsVBOs(unsigned int *VAO_Ray, unsigned int *VBO_RayVertices, unsigned int *VBO_Color);
 void CreateWallsVAOsVBOs(unsigned int *VAO_Walls, unsigned int *VBO_Wallvertices, unsigned int *VBO_Color);
@@ -116,8 +117,8 @@ int main(int argc, char *argv[])
     lastMousePos = (Vector2 *)malloc(sizeof(Vector2));
     playerPos = (Vector2 *)malloc(sizeof(Vector2));
     origin = (Vector2 *)malloc(sizeof(Vector2));
-    origin->X = ConvertToOpenGLX(WIDTH / 2 - PLAYERSIZE / 2);
-    origin->Y = ConvertToOpenGLY(HEIGHT / 2 - PLAYERSIZE / 2);
+    origin->X = ConvertToOpenGLX(WIDTH / 2 - PLAYERSIZE / 2, WIDTH);
+    origin->Y = ConvertToOpenGLY(HEIGHT / 2 - PLAYERSIZE / 2, HEIGHT);
     if (Init() == 1)
         return 1;
 
@@ -325,9 +326,9 @@ void CreateGrid()
                 for (int i = 0; i < 6; i++)
                 {
                     gridColor[index] = 0.0f;
-                    gridVertices[index++] = ConvertToOpenGLX(xS[i]);
+                    gridVertices[index++] = ConvertToOpenGLX(xS[i], WIDTH);
                     gridColor[index] = 0.0f;
-                    gridVertices[index++] = ConvertToOpenGLY(yS[i]);
+                    gridVertices[index++] = ConvertToOpenGLY(yS[i], HEIGHT);
                     gridColor[index] = 0.0f;
                     gridVertices[index] = 0.0f;
                     if (index + 1 <= 3 * 6 * GRID_HEIGHT * GRID_WIDTH)
@@ -360,9 +361,9 @@ void CreateGrid()
                 for (int i = 0; i < 6; i++)
                 {
                     gridColor[index] = 1.0f;
-                    gridVertices[index++] = ConvertToOpenGLX(xS[i]);
+                    gridVertices[index++] = ConvertToOpenGLX(xS[i], WIDTH);
                     gridColor[index] = 1.0f;
-                    gridVertices[index++] = ConvertToOpenGLY(yS[i]);
+                    gridVertices[index++] = ConvertToOpenGLY(yS[i], HEIGHT);
                     gridColor[index] = 1.0f;
                     gridVertices[index] = 0.0f;
                     if (index + 1 <= 3 * 6 * 8 * 10)
@@ -377,16 +378,6 @@ void CreateGrid()
     printf("Grid Create\n");
 }
 
-float ConvertToOpenGLX(float pCoord)
-{
-    return (pCoord - WIDTH / 2) / (WIDTH / 2);
-}
-
-float ConvertToOpenGLY(float pCoord)
-{
-    return (pCoord - HEIGHT / 2) / (HEIGHT / 2);
-}
-
 void CreatePlayer(unsigned int *VAO_Player, unsigned int *VBO_Player, unsigned int *VBO_Color_Player)
 {
     float xS[6] = {playerPosX, playerPosX, playerPosX + PLAYERSIZE, playerPosX, playerPosX + PLAYERSIZE, playerPosX + PLAYERSIZE};
@@ -394,8 +385,8 @@ void CreatePlayer(unsigned int *VAO_Player, unsigned int *VBO_Player, unsigned i
     int index = 0;
     for (int i = 0; i < 6; i++)
     {
-        vertices[index++] = ConvertToOpenGLX(xS[i]);
-        vertices[index++] = ConvertToOpenGLY(yS[i]);
+        vertices[index++] = ConvertToOpenGLX(xS[i], WIDTH);
+        vertices[index++] = ConvertToOpenGLY(yS[i], HEIGHT);
         vertices[index] = 0.0f;
         if (index + 1 <= 18)
             index++;
@@ -448,8 +439,8 @@ void Player()
         playerPosY = HEIGHT / 2;
         playerAngle = 0;
     }
-    playerPos->X = ConvertToOpenGLX(playerPosX);
-    playerPos->Y = ConvertToOpenGLY(playerPosY);
+    playerPos->X = ConvertToOpenGLX(playerPosX, WIDTH);
+    playerPos->Y = ConvertToOpenGLY(playerPosY, HEIGHT);
 
     MultiplyMatriceToVector(model, model, playerPos);
 
@@ -581,8 +572,8 @@ void DrawRays(unsigned int *VAO_Ray, unsigned int *VBO_RayVertices, unsigned int
             y -= distance * sin(angle);
         }
 
-        RayVertices[j + 3] = ConvertToOpenGLX(x);
-        RayVertices[j + 4] = ConvertToOpenGLY(y);
+        RayVertices[j + 3] = ConvertToOpenGLX(x, WIDTH);
+        RayVertices[j + 4] = ConvertToOpenGLY(y, HEIGHT);
         RayVertices[j + 5] = 0.0f;
 
         if (rays[i] != NULL)
@@ -597,7 +588,7 @@ void DrawRays(unsigned int *VAO_Ray, unsigned int *VBO_RayVertices, unsigned int
         lPointA->X = playerPosX;
         lPointA->Y = playerPosY;
         lRay->pointA = lPointA;
-        lRay->norme = CalculRayDistance(playerPosX, playerPosY, x, y, angle);
+        lRay->norme = CalculRayDistance(playerPosX, playerPosY, x, y, angle, playerAngle);
         lRay->rayAngle = angle;
         lRay->pointB = lVector;
         rays[i] = lRay;
@@ -632,8 +623,8 @@ void Create3DWalls(unsigned int *VAO_Walls, unsigned int *VBO_Walls, unsigned in
 
         for (int j = 0; j < 6; j++)
         {
-            Wall3DVert[index++] = ConvertToOpenGLX(xS[j]);
-            Wall3DVert[index++] = ConvertToOpenGLY(yS[j]);
+            Wall3DVert[index++] = ConvertToOpenGLX(xS[j], WIDTH);
+            Wall3DVert[index++] = ConvertToOpenGLY(yS[j], HEIGHT);
             Wall3DVert[index++] = 0.0f;
 
             Wall3DColor[indexColor++] = 1.0f;
@@ -649,42 +640,6 @@ void Create3DWalls(unsigned int *VAO_Walls, unsigned int *VBO_Walls, unsigned in
     glBindBuffer(GL_ARRAY_BUFFER, *VBO_Color_Walls);
     glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(Wall3DColor), Wall3DColor);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
-}
-
-void MultiplyMatrices(float result[], float a[], float b[])
-{
-    for (int i = 0; i < 4; i++)
-    {
-        for (int j = 0; j < 4; j++)
-        {
-            float sum = 0.0f;
-            for (int k = 0; k < 4; k++)
-            {
-                sum += (a[i * 4 + k] * b[k * 4 + j]);
-            }
-            result[i * 4 + j] = sum;
-        }
-    }
-}
-
-void MultiplyMatriceToVector(float result[], float a[], Vector2 *b)
-{
-    for (int i = 0; i < 16; i++)
-        result[i] = 0.0f;
-    result[0] = 1.0f;
-    result[5] = 1.0f;
-    result[10] = 1.0f;
-    result[15] = 1.0f;
-
-    result[12] = b->X;
-    result[13] = b->Y;
-    result[14] = 0.0f;
-}
-
-float CalculRayDistance(float xA, float yA, float xB, float yB, float rayAngle)
-{
-    float normalRayDistance = sqrt(pow(xB - xA, 2) + pow(yB - yA, 2));
-    return normalRayDistance * cos(rayAngle - playerAngle);
 }
 
 void CreateRayVAOsVBOs(unsigned int *VAO_Ray, unsigned int *VBO_RayVertices, unsigned int *VBO_Color)
