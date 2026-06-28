@@ -4,6 +4,8 @@
 #include "Librairies\include\GLFW\glfw3.h"
 #include "LinkedList.h"
 #include "mathFuncs.h"
+#include "shaders.h"
+
 #define WIDTH 1200
 #define HEIGHT 800
 #define GRID_HEIGHT 8
@@ -96,20 +98,16 @@ int Init();
 void CreateGrid();
 void CreatePlayer(unsigned int *VAO_Player, unsigned int *VBO_Player, unsigned int *VBO_Color_Player);
 void Player();
-// float ConvertToOpenGLX(float pCoord);
-// float ConvertToOpenGLY(float pCoord);
 int CheckCollision(float pPosX, float pPosY);
 Vector2 *ReturnCollisionPos(float pPosX, float pPosY);
 void RotatePlayer();
 int IsMouseMoving();
-// void MultiplyMatrices(float result[], float a[], float b[]);
-// void MultiplyMatriceToVector(float result[], float a[], Vector2 *b);
 void DrawRays(unsigned int *VAO_Player, unsigned int *VBO_Player, unsigned int *VBO_Color_Player);
-// float CalculRayDistance(float xA, float yA, float xB, float yB, float rayAngle);
 void Create3DWalls(unsigned int *VAO_Walls, unsigned int *VBO_Walls, unsigned int *VBO_Color_Walls);
 void CreateRayVAOsVBOs(unsigned int *VAO_Ray, unsigned int *VBO_RayVertices, unsigned int *VBO_Color);
 void CreateWallsVAOsVBOs(unsigned int *VAO_Walls, unsigned int *VBO_Wallvertices, unsigned int *VBO_Color);
 int KeyPressed(int key);
+void freeRays(Ray *rays[], int arrSize);
 
 int main(int argc, char *argv[])
 {
@@ -235,17 +233,18 @@ int main(int argc, char *argv[])
         glfwPollEvents();
     }
 
+    glDeleteVertexArrays(1, &VAO_Grid);
+    glDeleteVertexArrays(1, &VAO_Player);
+    glDeleteVertexArrays(1, &VAO_Rays);
+    glDeleteVertexArrays(1, &VAO_Walls);
+
+    glDeleteProgram(Program);
+
     glfwDestroyWindow(window);
     glfwDestroyWindow(window3D);
     glfwTerminate();
 
-    for (int i = 0; i < NUMBER_OF_RAYS; i++)
-    {
-        free(rays[i]->pointA);
-        free(rays[i]->pointB);
-        free(rays[i]);
-    }
-
+    freeRays(rays, NUMBER_OF_RAYS);
     free(origin);
     free(mousePos);
     free(lastMousePos);
@@ -285,6 +284,11 @@ int Init()
     glClearColor(1.0f, 0.5f, 0.7f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
+    // const char *vertex = ReadVertex();
+    // const char *fragment = ReadFragment();
+
+    // printf("%s\n", vertex);
+    // printf("%s\n", fragment);
     GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(vertexShader, 1, &vertex, NULL);
     glCompileShader(vertexShader);
@@ -442,7 +446,7 @@ void Player()
     playerPos->X = ConvertToOpenGLX(playerPosX, WIDTH);
     playerPos->Y = ConvertToOpenGLY(playerPosY, HEIGHT);
 
-    MultiplyMatriceToVector(model, model, playerPos);
+    MultiplyMatriceToVector(model, playerPos);
 
     RotatePlayer();
 
@@ -467,8 +471,8 @@ int CheckCollision(float pPosX, float pPosY)
 
 Vector2 *ReturnCollisionPos(float pPosX, float pPosY)
 {
-    ListWall *searchNode = (ListWall *)malloc(sizeof(ListWall));
-    searchNode = head->next;
+    // ListWall *searchNode = (ListWall *)malloc(sizeof(ListWall));
+    ListWall *searchNode = head->next;
     while (searchNode->next != NULL)
     {
         if ((*searchNode).VALUE->position->X <= pPosX && (*searchNode).VALUE->size->X >= pPosX && (*searchNode).VALUE->position->Y <= pPosY && (*searchNode).VALUE->size->Y >= pPosY)
@@ -502,16 +506,16 @@ Vector2 *ReturnCollisionPos(float pPosX, float pPosY)
         }
         searchNode = searchNode->next;
     }
-    free(searchNode);
+    // free(searchNode);
     return NULL;
 }
 
 void RotatePlayer()
 {
     if (KeyPressed(GLFW_KEY_LEFT))
-        playerAngle += deltaTime;
-    if (KeyPressed(GLFW_KEY_RIGHT))
         playerAngle -= deltaTime;
+    if (KeyPressed(GLFW_KEY_RIGHT))
+        playerAngle += deltaTime;
 
     lastMousePos->X = mousePos->X;
     lastMousePos->Y = mousePos->Y;
@@ -533,10 +537,10 @@ void RotatePlayer()
         0, 0, 1, 0,
         0, 0, 0, 1};
 
-    MultiplyMatriceToVector(model, model, origin);
+    MultiplyMatriceToVector(model, origin);
     MultiplyMatrices(model, model, rotationMatrice);
     float toPlayer[16];
-    MultiplyMatriceToVector(toPlayer, toPlayer, playerPos);
+    MultiplyMatriceToVector(toPlayer, playerPos);
     MultiplyMatrices(model, model, toPlayer);
 }
 
@@ -563,6 +567,7 @@ void DrawRays(unsigned int *VAO_Ray, unsigned int *VBO_RayVertices, unsigned int
         int iteration = 0;
         int distance = 1;
 
+        free(rays[i]->pointB);
         Vector2 *lVector = NULL;
         while (lVector == NULL && iteration < (8 * 10 * 20 / distance))
         {
@@ -576,22 +581,17 @@ void DrawRays(unsigned int *VAO_Ray, unsigned int *VBO_RayVertices, unsigned int
         RayVertices[j + 4] = ConvertToOpenGLY(y, HEIGHT);
         RayVertices[j + 5] = 0.0f;
 
-        if (rays[i] != NULL)
+        rays[i]->pointA->X = playerPosX;
+        rays[i]->pointA->Y = playerPosY;
+        rays[i]->norme = CalculRayDistance(playerPosX, playerPosY, x, y, angle, playerAngle);
+        rays[i]->rayAngle = angle;
+        if (lVector != NULL)
+            rays[i]->pointB = lVector;
+        else
         {
-            free(rays[i]->pointA);
-            free(rays[i]->pointB);
-            free(rays[i]);
+            rays[i]->pointB->X = x;
+            rays[i]->pointB->Y = y;
         }
-
-        Ray *lRay = (Ray *)malloc(sizeof(Ray));
-        Vector2 *lPointA = (Vector2 *)malloc(sizeof(Vector2));
-        lPointA->X = playerPosX;
-        lPointA->Y = playerPosY;
-        lRay->pointA = lPointA;
-        lRay->norme = CalculRayDistance(playerPosX, playerPosY, x, y, angle, playerAngle);
-        lRay->rayAngle = angle;
-        lRay->pointB = lVector;
-        rays[i] = lRay;
     }
 
     glBindVertexArray(*VAO_Ray);
@@ -601,7 +601,7 @@ void DrawRays(unsigned int *VAO_Ray, unsigned int *VBO_RayVertices, unsigned int
 
 void Create3DWalls(unsigned int *VAO_Walls, unsigned int *VBO_Walls, unsigned int *VBO_Color_Walls)
 {
-    float zoom = 0.01f; // the smaller this is the bigger the walls will be
+    float zoom = 0.02f; // the smaller this is the bigger the walls will be
     float projPlaneDist = (WIDTH / 2.0f) / tanf(FOV / 2.0f);
 
     int index = 0;
@@ -644,6 +644,13 @@ void Create3DWalls(unsigned int *VAO_Walls, unsigned int *VBO_Walls, unsigned in
 
 void CreateRayVAOsVBOs(unsigned int *VAO_Ray, unsigned int *VBO_RayVertices, unsigned int *VBO_Color)
 {
+    for (int i = 0; i < NUMBER_OF_RAYS; i++)
+    {
+        rays[i] = malloc(sizeof(Ray));
+        rays[i]->pointA = malloc(sizeof(Vector2));
+        rays[i]->pointB = malloc(sizeof(Vector2));
+    }
+
     glBindVertexArray(*VAO_Ray);
     glGenBuffers(1, VBO_RayVertices);
     glBindBuffer(GL_ARRAY_BUFFER, *VBO_RayVertices);
@@ -681,4 +688,14 @@ void CreateWallsVAOsVBOs(unsigned int *VAO_Wall, unsigned int *VBO_Wall_Vertices
 int KeyPressed(int key)
 {
     return glfwGetKey(window, key) || glfwGetKey(window3D, key);
+}
+
+void freeRays(Ray *rays[], int arrSize)
+{
+    for (int i = 0; i < 0; i++)
+    {
+        free(rays[i]->pointA);
+        free(rays[i]->pointB);
+        free(rays[i]);
+    }
 }
