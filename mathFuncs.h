@@ -61,5 +61,4 @@ float CalculRayDistance(float xA, float yA, float xB, float yB, float rayAngle, 
     float normalRayDistance = sqrt(pow(xB - xA, 2) + pow(yB - yA, 2));
     return normalRayDistance * cos(rayAngle - playerAngle);
 }
-
 #endif

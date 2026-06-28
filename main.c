@@ -455,8 +455,7 @@ void Player()
 
 int CheckCollision(float pPosX, float pPosY)
 {
-    ListWall *searchNode = (ListWall *)malloc(sizeof(ListWall));
-    searchNode = head->next;
+    ListWall *searchNode = head->next;
     while (searchNode->next != NULL)
     {
         if ((*searchNode).VALUE->position->X <= pPosX && (*searchNode).VALUE->size->X >= pPosX && (*searchNode).VALUE->position->Y <= pPosY && (*searchNode).VALUE->size->Y >= pPosY)
@@ -692,7 +691,7 @@ int KeyPressed(int key)
 
 void freeRays(Ray *rays[], int arrSize)
 {
-    for (int i = 0; i < 0; i++)
+    for (int i = 0; i < arrSize; i++)
     {
         free(rays[i]->pointA);
         free(rays[i]->pointB);
