@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <math.h>
-#include "Librairies\include\glad\glad.h"
-#include "Librairies\include\GLFW\glfw3.h"
+#include "Librairies/include/glad/glad.h"
+#include "Librairies/include/GLFW/glfw3.h"
 #include "LinkedList.h"
 #include "mathFuncs.h"
 #include "shaders.h"

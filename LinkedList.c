@@ -49,7 +49,6 @@ void AddAtEndOfListWall(Wall *value, ListWall *head)
             current = current->next;
         }
         current->next = newNode;
-        printf("");
         return;
     }
 }
