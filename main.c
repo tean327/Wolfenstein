@@ -14,7 +14,7 @@
 #define FOV PI / 3
 
 #define PLAYERSIZE 20
-#define PI 3.141592653589793
+
 
 int TileSizeX;
 int TileSizeY;
@@ -58,7 +58,8 @@ int map[GRID_HEIGHT][GRID_WIDTH] = {
     {1, 0, 1, 0, 0, 0, 0, 0, 0, 1},
     {1, 0, 0, 0, 1, 0, 1, 0, 0, 1},
     {1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 1, 1, 1, 1, 1, 1, 1, 1, 1}};
+    {1, 1, 1, 1, 1, 1, 1, 1, 1, 1}
+};
 
 GLfloat gridVertices[3 * 6 * GRID_HEIGHT * GRID_WIDTH];
 GLfloat gridColor[3 * 6 * GRID_HEIGHT * GRID_WIDTH];
@@ -71,7 +72,8 @@ GLfloat color[] = {
     1.0f, 0.0f, 0.0f,
     1.0f, 0.0f, 0.0f,
     1.0f, 1.0f, 0.0f,
-    1.0f, 1.0f, 0.0f};
+    1.0f, 1.0f, 0.0f
+};
 
 GLfloat RayVertices[6 * NUMBER_OF_RAYS];
 GLfloat RayColor[6 * NUMBER_OF_RAYS];
@@ -255,6 +257,11 @@ int main(int argc, char *argv[])
 
 int Init()
 {
+    #ifdef linux
+    //If you are on linux you need to change the platform to X11 because if you're on gnome it will not allow you to add decoration to the window
+    glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_X11);
+    printf("We are on linux\n");
+    #endif
     // Initialize glfw
     glfwInit();
     // Give hint to glfw which version of opengl we are using (here 3.3)
@@ -262,6 +269,9 @@ int Init()
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     // Tell glfw we are using the core profile which means we only will have the modern functions
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+    //Tell OpenGL to not create a plain window without any title or button
+    glfwWindowHint(GLFW_DECORATED, GLFW_TRUE);
 
     // Create the window (parameters are size x then y, name of the window, if you want to put it in full screen and not important)
     window = glfwCreateWindow(WIDTH, HEIGHT, "NutellaLeBoss", NULL, NULL);
@@ -273,6 +283,9 @@ int Init()
         glfwTerminate();
         return 1;
     }
+
+    glfwPollEvents();
+
     // This is to tell opengl that we want to use this window if we don't tell him it will be bugs with the following lines of code
     glfwMakeContextCurrent(window);
     // Load glad and all of its function/method so it configures Opengl
@@ -464,13 +477,11 @@ int CheckCollision(float pPosX, float pPosY)
         }
         searchNode = searchNode->next;
     }
-    free(searchNode);
     return 0;
 }
 
 Vector2 *ReturnCollisionPos(float pPosX, float pPosY)
 {
-    // ListWall *searchNode = (ListWall *)malloc(sizeof(ListWall));
     ListWall *searchNode = head->next;
     while (searchNode->next != NULL)
     {
@@ -505,7 +516,6 @@ Vector2 *ReturnCollisionPos(float pPosX, float pPosY)
         }
         searchNode = searchNode->next;
     }
-    // free(searchNode);
     return NULL;
 }
 
@@ -566,7 +576,8 @@ void DrawRays(unsigned int *VAO_Ray, unsigned int *VBO_RayVertices, unsigned int
         int iteration = 0;
         int distance = 1;
 
-        free(rays[i]->pointB);
+        //TODO CHECK IF THIS FREE NEED TO BE HERE OR NOT 
+        //free(rays[i]->pointB);
         Vector2 *lVector = NULL;
         while (lVector == NULL && iteration < (8 * 10 * 20 / distance))
         {

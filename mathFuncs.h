@@ -3,6 +3,8 @@
 #include <math.h>
 #include "LinkedList.h"
 
+#define PI 3.141592653589793
+
 /// @brief Convert the x of a coordante from the screen plan to the openGL plan
 /// @return the converted coordonate x
 float ConvertToOpenGLX(float pCoord, int screenWidth)
