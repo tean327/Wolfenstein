@@ -15,7 +15,6 @@
 
 #define PLAYERSIZE 20
 
-
 int TileSizeX;
 int TileSizeY;
 
@@ -58,8 +57,7 @@ int map[GRID_HEIGHT][GRID_WIDTH] = {
     {1, 0, 1, 0, 0, 0, 0, 0, 0, 1},
     {1, 0, 0, 0, 1, 0, 1, 0, 0, 1},
     {1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 1, 1, 1, 1, 1, 1, 1, 1, 1}
-};
+    {1, 1, 1, 1, 1, 1, 1, 1, 1, 1}};
 
 GLfloat gridVertices[3 * 6 * GRID_HEIGHT * GRID_WIDTH];
 GLfloat gridColor[3 * 6 * GRID_HEIGHT * GRID_WIDTH];
@@ -72,8 +70,7 @@ GLfloat color[] = {
     1.0f, 0.0f, 0.0f,
     1.0f, 0.0f, 0.0f,
     1.0f, 1.0f, 0.0f,
-    1.0f, 1.0f, 0.0f
-};
+    1.0f, 1.0f, 0.0f};
 
 GLfloat RayVertices[6 * NUMBER_OF_RAYS];
 GLfloat RayColor[6 * NUMBER_OF_RAYS];
@@ -257,11 +254,11 @@ int main(int argc, char *argv[])
 
 int Init()
 {
-    #ifdef linux
-    //If you are on linux you need to change the platform to X11 because if you're on gnome it will not allow you to add decoration to the window
+#ifdef linux
+    // If you are on linux you need to change the platform to X11 because if you're on gnome it will not allow you to add decoration to the window
     glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_X11);
     printf("We are on linux\n");
-    #endif
+#endif
     // Initialize glfw
     glfwInit();
     // Give hint to glfw which version of opengl we are using (here 3.3)
@@ -270,7 +267,7 @@ int Init()
     // Tell glfw we are using the core profile which means we only will have the modern functions
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    //Tell OpenGL to not create a plain window without any title or button
+    // Tell OpenGL to not create a plain window without any title or button
     glfwWindowHint(GLFW_DECORATED, GLFW_TRUE);
 
     // Create the window (parameters are size x then y, name of the window, if you want to put it in full screen and not important)
@@ -576,8 +573,8 @@ void DrawRays(unsigned int *VAO_Ray, unsigned int *VBO_RayVertices, unsigned int
         int iteration = 0;
         int distance = 1;
 
-        //TODO CHECK IF THIS FREE NEED TO BE HERE OR NOT 
-        //free(rays[i]->pointB);
+        // TODO CHECK IF THIS FREE NEED TO BE HERE OR NOT
+        // free(rays[i]->pointB);
         Vector2 *lVector = NULL;
         while (lVector == NULL && iteration < (8 * 10 * 20 / distance))
         {
