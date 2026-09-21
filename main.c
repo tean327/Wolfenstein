@@ -275,7 +275,7 @@ int Init()
 
     // Create the window (parameters are size x then y, name of the window, if you want to put it in full screen and not important)
     window = glfwCreateWindow(WIDTH, HEIGHT, "NutellaLeBoss", NULL, NULL);
-    window3D = glfwCreateWindow(WIDTH, HEIGHT, "3DNutella", NULL, NULL);
+    window3D = glfwCreateWindow(WIDTH, HEIGHT, "3DNutella", NULL, window);
 
     // Just to make sure that if the window does not render the program does not break
     if (window == NULL || window3D == NULL)
@@ -638,7 +638,7 @@ void Create3DWalls(unsigned int *VAO_Walls, unsigned int *VBO_Walls, unsigned in
             Wall3DVert[index++] = 0.0f;
 
             Wall3DColor[indexColor++] = 1.0f;
-            Wall3DColor[indexColor++] = 0.0f;
+            Wall3DColor[indexColor++] = 1.0f;
             Wall3DColor[indexColor++] = 1.0f;
         }
     }
