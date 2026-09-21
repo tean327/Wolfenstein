@@ -5,6 +5,7 @@
 #include "LinkedList.h"
 #include "mathFuncs.h"
 #include "shaders.h"
+#include "FileLoader.h"
 
 #define WIDTH 1200
 #define HEIGHT 800
@@ -47,6 +48,25 @@ const char *vertex = "#version 330 core\n"
                      "color = aColor;\n"
                      "}\n";
 
+const char *textFrag = "#version 330 core\n"
+                       "out vec4 FragColor;\n"
+                       "in vec2 UV;\n"
+                       "uniform sampler2D myTextureSampler;\n"
+                       "void main()\n"
+                       "{\n"
+                       "FragColor = texture(myTextureSampler, UV);\n"
+                       "}\n";
+
+const char *textVert = "#version 330 core\n"
+                       "layout (location=0) in vec3 aPos;\n"
+                       "layout (location=1) in vec2 aVertexUV;\n"
+                       "out vec2 UV;\n"
+                       "void main()\n"
+                       "{\n"
+                       "gl_Position = vec4(aPos.xy, 0.0, 1.0);\n"
+                       "UV = aVertexUV;\n"
+                       "}\n";
+
 GLFWwindow *window;
 GLFWwindow *window3D;
 int map[GRID_HEIGHT][GRID_WIDTH] = {
@@ -62,6 +82,7 @@ int map[GRID_HEIGHT][GRID_WIDTH] = {
 GLfloat gridVertices[3 * 6 * GRID_HEIGHT * GRID_WIDTH];
 GLfloat gridColor[3 * 6 * GRID_HEIGHT * GRID_WIDTH];
 GLuint Program;
+GLuint textProgram;
 
 GLfloat vertices[18];
 GLfloat color[] = {
@@ -77,6 +98,23 @@ GLfloat RayColor[6 * NUMBER_OF_RAYS];
 
 GLfloat Wall3DVert[18 * NUMBER_OF_RAYS];
 GLfloat Wall3DColor[18 * NUMBER_OF_RAYS];
+
+GLfloat CrossHair[6 * 3] = {
+    -0.2f, 0.2f, 0.0f,  // Top-left
+    0.2f, 0.2f, 0.0f,   // Top-right
+    0.2f, -0.2f, 0.0f,  // Bottom-right
+    0.2f, -0.2f, 0.0f,  // Bottom-right
+    -0.2f, -0.2f, 0.0f, // Bottom-left
+    -0.2f, 0.2f, 0.0f   // Top-left
+};
+
+GLfloat CrossHairUV[6 * 2] = {
+    0.0f, 1.0f,
+    1.0f, 1.0f,
+    1.0f, 0.0f,
+    1.0f, 0.0f,
+    0.0f, 0.0f,
+    0.0f, 1.0f};
 
 Ray *rays[NUMBER_OF_RAYS];
 
@@ -186,6 +224,27 @@ int main(int argc, char *argv[])
 
     loc = glGetUniformLocation(Program, "mvp");
 
+    PPM *ppm = LoadPPM("assets/crosshair.ppm");
+    unsigned int VAO_UI, VBO_UI_Vert, VBO_UI_UV;
+    if (ppm)
+    {
+        glUseProgram(textProgram);
+        glGenVertexArrays(1, &VAO_UI);
+        glBindVertexArray(VAO_UI);
+
+        glGenBuffers(1, &VBO_UI_Vert);
+        glBindBuffer(GL_ARRAY_BUFFER, VBO_UI_Vert);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(CrossHair), CrossHair, GL_STATIC_DRAW);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void *)0);
+        glEnableVertexAttribArray(0);
+
+        glGenBuffers(1, &VBO_UI_UV);
+        glBindBuffer(GL_ARRAY_BUFFER, VBO_UI_UV);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(CrossHairUV), CrossHairUV, GL_STATIC_DRAW);
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, (void *)0);
+        glEnableVertexAttribArray(1);
+    }
+
     while (!glfwWindowShouldClose(window) && !glfwWindowShouldClose(window3D))
     {
         glfwMakeContextCurrent(window);
@@ -227,6 +286,24 @@ int main(int argc, char *argv[])
         glBindVertexArray(VAO_Walls);
         glDrawArrays(GL_TRIANGLES, 0, NUMBER_OF_RAYS * 6);
         glBindVertexArray(0);
+
+        // TODO if this is executed the crosshair will be garbage texture and this will turn all the scene on the y angle
+        //  if (ppm)
+        //  {
+        //      glUseProgram(textProgram);
+        //      glDisable(GL_DEPTH_TEST);
+
+        //     glActiveTexture(GL_TEXTURE0);
+        //     glBindTexture(GL_TEXTURE_2D, ppm->textureID);
+        //     glUniform1i(glGetUniformLocation(textProgram, "myTextureSampler"), 0);
+
+        //     glBindVertexArray(VAO_UI);
+        //     glDrawArrays(GL_TRIANGLES, 0, 6);
+        //     glBindVertexArray(0);
+
+        //     glEnable(GL_DEPTH_TEST);
+        // }
+
         glfwSwapBuffers(window3D);
 
         glfwPollEvents();
@@ -314,6 +391,22 @@ int Init()
 
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
+
+    GLuint vertexTextShader = glCreateShader(GL_VERTEX_SHADER);
+    glShaderSource(vertexTextShader, 1, &textVert, NULL);
+    glCompileShader(vertexTextShader);
+
+    GLuint fragmentTextShader = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(fragmentTextShader, 1, &textFrag, NULL);
+    glCompileShader(fragmentTextShader);
+
+    textProgram = glCreateProgram();
+    glAttachShader(textProgram, vertexTextShader);
+    glAttachShader(textProgram, fragmentTextShader);
+    glLinkProgram(textProgram);
+
+    glDeleteShader(vertexTextShader);
+    glDeleteShader(fragmentTextShader);
     return 0;
 }
 
