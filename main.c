@@ -84,15 +84,6 @@ GLfloat gridColor[3 * 6 * GRID_HEIGHT * GRID_WIDTH];
 GLuint Program;
 GLuint textProgram;
 
-GLfloat vertices[18];
-GLfloat color[] = {
-    1.0f, 0.0f, 0.0f,
-    1.0f, 0.0f, 0.0f,
-    1.0f, 0.0f, 0.0f,
-    1.0f, 0.0f, 0.0f,
-    1.0f, 1.0f, 0.0f,
-    1.0f, 1.0f, 0.0f};
-
 GLfloat RayVertices[6 * NUMBER_OF_RAYS];
 GLfloat RayColor[6 * NUMBER_OF_RAYS];
 
@@ -100,12 +91,12 @@ GLfloat Wall3DVert[18 * NUMBER_OF_RAYS];
 GLfloat Wall3DColor[18 * NUMBER_OF_RAYS];
 
 GLfloat CrossHair[6 * 3] = {
-    -0.2f, 0.2f, 0.0f,  // Top-left
-    0.2f, 0.2f, 0.0f,   // Top-right
-    0.2f, -0.2f, 0.0f,  // Bottom-right
-    0.2f, -0.2f, 0.0f,  // Bottom-right
-    -0.2f, -0.2f, 0.0f, // Bottom-left
-    -0.2f, 0.2f, 0.0f   // Top-left
+    -0.4f, -0.2f, 0.0f, // Top-left
+    0.4f, -0.2f, 0.0f,  // Top-right
+    0.4f, -1.0f, 0.0f,  // Bottom-right
+    0.4f, -1.0f, 0.0f,  // Bottom-right
+    -0.4f, -1.0f, 0.0f, // Bottom-left
+    -0.4f, -0.2f, 0.0f  // Top-left
 };
 
 GLfloat CrossHairUV[6 * 2] = {
@@ -174,7 +165,7 @@ int main(int argc, char *argv[])
     CreateGrid();
 
     glUseProgram(Program);
-    unsigned int VBOVertices, VBOColor, VBO_Player, VBO_Color_Player, VBO_RayVertices, VBO_RayColor, VBO_3D_Vert, VBO_3D_Color, VAO_Grid, VAO_Player, VAO_Rays, VAO_Walls;
+    unsigned int VBOVertices, VBOColor, VBO_RayVertices, VBO_RayColor, VBO_3D_Vert, VBO_3D_Color, VAO_Grid, VAO_Rays, VAO_Walls;
     glGenVertexArrays(1, &VAO_Grid);
     glBindVertexArray(VAO_Grid);
 
@@ -191,13 +182,6 @@ int main(int argc, char *argv[])
     glEnableVertexAttribArray(1);
 
     int count = sizeof(gridVertices) / sizeof(gridVertices[0]);
-
-    glBindVertexArray(0);
-
-    glGenVertexArrays(1, &VAO_Player);
-    glBindVertexArray(VAO_Player);
-
-    CreatePlayer(&VAO_Player, &VBO_Player, &VBO_Color_Player);
 
     glBindVertexArray(0);
 
@@ -219,13 +203,14 @@ int main(int argc, char *argv[])
 
     glBindVertexArray(VAO_Grid);
 
-    glBindVertexArray(VAO_Player);
     glfwSwapBuffers(window);
 
     loc = glGetUniformLocation(Program, "mvp");
 
-    PPM *ppm = LoadPPM("assets/crosshair.ppm");
+    BMP *ppm = LoadBMP("assets/latest.bmp");
+    printf("We are PPM\n");
     unsigned int VAO_UI, VBO_UI_Vert, VBO_UI_UV;
+
     if (ppm)
     {
         glUseProgram(textProgram);
@@ -271,38 +256,36 @@ int main(int argc, char *argv[])
 
         Player();
 
-        glBindVertexArray(VAO_Player);
-        glDrawArrays(GL_TRIANGLES, 0, 6);
-
-        glBindVertexArray(0);
-
         glfwSwapBuffers(window);
 
         glfwMakeContextCurrent(window3D);
         glClearColor(1.0f, 0.5f, 0.7f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glUseProgram(Program);
+        for (int i = 0; i < 16; i++)
+            model[i] = mat1[i];
+        glUniformMatrix4fv(loc, 1, GL_FALSE, model);
         Create3DWalls(&VAO_Walls, &VBO_3D_Vert, &VBO_3D_Color);
         glBindVertexArray(VAO_Walls);
         glDrawArrays(GL_TRIANGLES, 0, NUMBER_OF_RAYS * 6);
         glBindVertexArray(0);
 
         // TODO if this is executed the crosshair will be garbage texture and this will turn all the scene on the y angle
-        //  if (ppm)
-        //  {
-        //      glUseProgram(textProgram);
-        //      glDisable(GL_DEPTH_TEST);
+        if (ppm)
+        {
+            glUseProgram(textProgram);
+            glDisable(GL_DEPTH_TEST);
 
-        //     glActiveTexture(GL_TEXTURE0);
-        //     glBindTexture(GL_TEXTURE_2D, ppm->textureID);
-        //     glUniform1i(glGetUniformLocation(textProgram, "myTextureSampler"), 0);
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, ppm->textureID);
+            glUniform1i(glGetUniformLocation(textProgram, "myTextureSampler"), 0);
 
-        //     glBindVertexArray(VAO_UI);
-        //     glDrawArrays(GL_TRIANGLES, 0, 6);
-        //     glBindVertexArray(0);
+            glBindVertexArray(VAO_UI);
+            glDrawArrays(GL_TRIANGLES, 0, 6);
+            glBindVertexArray(0);
 
-        //     glEnable(GL_DEPTH_TEST);
-        // }
+            glEnable(GL_DEPTH_TEST);
+        }
 
         glfwSwapBuffers(window3D);
 
@@ -310,7 +293,6 @@ int main(int argc, char *argv[])
     }
 
     glDeleteVertexArrays(1, &VAO_Grid);
-    glDeleteVertexArrays(1, &VAO_Player);
     glDeleteVertexArrays(1, &VAO_Rays);
     glDeleteVertexArrays(1, &VAO_Walls);
 
@@ -487,33 +469,6 @@ void CreateGrid()
 
 void CreatePlayer(unsigned int *VAO_Player, unsigned int *VBO_Player, unsigned int *VBO_Color_Player)
 {
-    float xS[6] = {playerPosX, playerPosX, playerPosX + PLAYERSIZE, playerPosX, playerPosX + PLAYERSIZE, playerPosX + PLAYERSIZE};
-    float yS[6] = {playerPosY, playerPosY + PLAYERSIZE, playerPosY + PLAYERSIZE, playerPosY, playerPosY, playerPosY + PLAYERSIZE};
-    int index = 0;
-    for (int i = 0; i < 6; i++)
-    {
-        vertices[index++] = ConvertToOpenGLX(xS[i], WIDTH);
-        vertices[index++] = ConvertToOpenGLY(yS[i], HEIGHT);
-        vertices[index] = 0.0f;
-        if (index + 1 <= 18)
-            index++;
-    }
-
-    glGenBuffers(1, VBO_Player);
-    glBindBuffer(GL_ARRAY_BUFFER, *VBO_Player);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0);
-    glEnableVertexAttribArray(0);
-
-    glGenBuffers(1, VBO_Color_Player);
-    glBindBuffer(GL_ARRAY_BUFFER, *VBO_Color_Player);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(color), color, GL_STATIC_DRAW);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0);
-    glEnableVertexAttribArray(1);
-
-    glBindVertexArray(0);
-
-    glUniformMatrix4fv(loc, 1, GL_FALSE, model);
 }
 
 void Player()
@@ -666,8 +621,6 @@ void DrawRays(unsigned int *VAO_Ray, unsigned int *VBO_RayVertices, unsigned int
         int iteration = 0;
         int distance = 1;
 
-        // TODO CHECK IF THIS FREE NEED TO BE HERE OR NOT
-        // free(rays[i]->pointB);
         Vector2 *lVector = NULL;
         while (lVector == NULL && iteration < (8 * 10 * 20 / distance))
         {

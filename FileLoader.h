@@ -12,15 +12,15 @@ typedef struct
 
 typedef struct
 {
+    unsigned char header[54];
+    int dataPos;
+    int imageSize;
     int width;
     int height;
     int maxValue;
-    Pixel **data;
+    unsigned char *data;
     GLuint textureID;
-} PPM;
+} BMP;
 
-PPM *LoadPPM(char *pFilename);
-GLuint loadP3ppm(FILE *file, PPM *ppm);
-GLuint loadP6ppm(FILE *file, PPM *ppm);
-int CheckPPM(FILE *file);
+BMP *LoadBMP(char *pFilename);
 #endif
