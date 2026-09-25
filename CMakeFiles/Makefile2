@@ -85,12 +85,12 @@ clean: CMakeFiles/raycaster.dir/clean
 CMakeFiles/raycaster.dir/all:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/raycaster.dir/build.make CMakeFiles/raycaster.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/raycaster.dir/build.make CMakeFiles/raycaster.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/etan-grimault/prive/projet-codage/Wolfenstein/CMakeFiles --progress-num=1,2,3,4 "Built target raycaster"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/etan-grimault/prive/projet-codage/Wolfenstein/CMakeFiles --progress-num=1,2,3,4,5,6 "Built target raycaster"
 .PHONY : CMakeFiles/raycaster.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/raycaster.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/etan-grimault/prive/projet-codage/Wolfenstein/CMakeFiles 4
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/etan-grimault/prive/projet-codage/Wolfenstein/CMakeFiles 6
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/raycaster.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/etan-grimault/prive/projet-codage/Wolfenstein/CMakeFiles 0
 .PHONY : CMakeFiles/raycaster.dir/rule
@@ -102,7 +102,7 @@ raycaster: CMakeFiles/raycaster.dir/rule
 # codegen rule for target.
 CMakeFiles/raycaster.dir/codegen:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/raycaster.dir/build.make CMakeFiles/raycaster.dir/codegen
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/etan-grimault/prive/projet-codage/Wolfenstein/CMakeFiles --progress-num=1,2,3,4 "Finished codegen for target raycaster"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/etan-grimault/prive/projet-codage/Wolfenstein/CMakeFiles --progress-num=1,2,3,4,5,6 "Finished codegen for target raycaster"
 .PHONY : CMakeFiles/raycaster.dir/codegen
 
 # clean rule for target.

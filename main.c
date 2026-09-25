@@ -3,9 +3,9 @@
 #include "Librairies/include/glad/glad.h"
 #include "Librairies/include/GLFW/glfw3.h"
 #include "LinkedList.h"
-#include "mathFuncs.h"
 #include "shaders.h"
 #include "FileLoader.h"
+#include "Ennemy.h"
 
 #define WIDTH 1200
 #define HEIGHT 800
@@ -91,12 +91,12 @@ GLfloat Wall3DVert[18 * NUMBER_OF_RAYS];
 GLfloat Wall3DColor[18 * NUMBER_OF_RAYS];
 
 GLfloat CrossHair[6 * 3] = {
-    -0.4f, -0.2f, 0.0f, // Top-left
-    0.4f, -0.2f, 0.0f,  // Top-right
-    0.4f, -1.0f, 0.0f,  // Bottom-right
-    0.4f, -1.0f, 0.0f,  // Bottom-right
-    -0.4f, -1.0f, 0.0f, // Bottom-left
-    -0.4f, -0.2f, 0.0f  // Top-left
+    -0.5f, -0.2f, 0.0f, // Top-left
+    0.3f, -0.2f, 0.0f,  // Top-right
+    0.3f, -1.0f, 0.0f,  // Bottom-right
+    0.3f, -1.0f, 0.0f,  // Bottom-right
+    -0.5f, -1.0f, 0.0f, // Bottom-left
+    -0.5f, -0.2f, 0.0f  // Top-left
 };
 
 GLfloat CrossHairUV[6 * 2] = {
@@ -160,7 +160,7 @@ int main(int argc, char *argv[])
     // Tell opengl the area of our window so that we can make changes after
     glViewport(0, 0, WIDTH, HEIGHT);
 
-    glClearColor(1.0f, 0.5f, 0.7f, 1.0f);
+    glClearColor(0.7f, 0.5f, 0.7f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
     CreateGrid();
 
@@ -197,7 +197,7 @@ int main(int argc, char *argv[])
 
     float crntTime, lastFrame;
 
-    glClearColor(1.0f, 0.5f, 0.7f, 1.0f);
+    glClearColor(0.7f, 0.5f, 0.7f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
     glUseProgram(Program);
 
@@ -207,8 +207,11 @@ int main(int argc, char *argv[])
 
     loc = glGetUniformLocation(Program, "mvp");
 
+
+    //Allow us to blend the alpha of the textures
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); 
+    glEnable(GL_BLEND);
     BMP *ppm = LoadBMP("assets/latest.bmp");
-    printf("We are PPM\n");
     unsigned int VAO_UI, VBO_UI_Vert, VBO_UI_UV;
 
     if (ppm)
@@ -230,6 +233,32 @@ int main(int argc, char *argv[])
         glEnableVertexAttribArray(1);
     }
 
+    Ennemy* ennemy = CreateEnnemy(3, 200, 200, HEIGHT, WIDTH);
+    unsigned int VAO_ENNEMY;
+    if(ennemy)
+    {
+        glUseProgram(Program);
+        glGenVertexArrays(1, &VAO_ENNEMY);
+        glBindVertexArray(VAO_ENNEMY);
+
+        glGenBuffers(1, &ennemy->VBOvert);
+        glBindBuffer(GL_ARRAY_BUFFER, ennemy->VBOvert);
+        glBufferData(GL_ARRAY_BUFFER, 18*sizeof(GLfloat), ennemy->vertices, GL_STATIC_DRAW);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void *)0);
+        glEnableVertexAttribArray(0);
+
+        glGenBuffers(1, &ennemy->VBO_UV);
+        glBindBuffer(GL_ARRAY_BUFFER, ennemy->VBO_UV);
+        glBufferData(GL_ARRAY_BUFFER, 18*sizeof(GLfloat), ennemy->UV, GL_STATIC_DRAW);
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void *)0);    
+
+        glEnableVertexAttribArray(1);
+
+        for(int i = 0; i < 18; i++)
+            printf("%f\n", ennemy->vertices[i]);
+    }
+
+
     while (!glfwWindowShouldClose(window) && !glfwWindowShouldClose(window3D))
     {
         glfwMakeContextCurrent(window);
@@ -237,11 +266,12 @@ int main(int argc, char *argv[])
         for (int i = 0; i < 16; i++)
             model[i] = mat1[i];
         glUniformMatrix4fv(loc, 1, GL_FALSE, model);
+
         crntTime = glfwGetTime();
         deltaTime = crntTime - lastFrame;
         lastFrame = crntTime;
 
-        glClearColor(1.0f, 0.5f, 0.7f, 1.0f);
+        glClearColor(0.7f, 0.5f, 0.7f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
         glUseProgram(Program);
 
@@ -254,12 +284,19 @@ int main(int argc, char *argv[])
         glDrawArrays(GL_LINES, 0, NUMBER_OF_RAYS * 2);
         glBindVertexArray(0);
 
+        if(ennemy)
+        {
+            glBindVertexArray(VAO_ENNEMY);
+            glDrawArrays(GL_TRIANGLES, 0, 6);
+            glBindVertexArray(0);
+        }
+
         Player();
 
         glfwSwapBuffers(window);
 
         glfwMakeContextCurrent(window3D);
-        glClearColor(1.0f, 0.5f, 0.7f, 1.0f);
+        glClearColor(0.7f, 0.5f, 0.7f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glUseProgram(Program);
         for (int i = 0; i < 16; i++)

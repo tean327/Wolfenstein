@@ -5,6 +5,8 @@ raycaster: \
   CMakeFiles/raycaster.dir/main.c.o \
   CMakeFiles/raycaster.dir/glad.c.o \
   CMakeFiles/raycaster.dir/LinkedList.c.o \
+  CMakeFiles/raycaster.dir/Fileloader.c.o \
+  CMakeFiles/raycaster.dir/Ennemy.c.o \
   /usr/lib/gcc/x86_64-linux-gnu/15/../../../x86_64-linux-gnu/libglfw.so \
   /usr/lib/gcc/x86_64-linux-gnu/15/../../../x86_64-linux-gnu/libGL.so \
   /usr/lib/gcc/x86_64-linux-gnu/15/../../../x86_64-linux-gnu/libX11.so \
@@ -50,6 +52,10 @@ CMakeFiles/raycaster.dir/main.c.o:
 CMakeFiles/raycaster.dir/glad.c.o:
 
 CMakeFiles/raycaster.dir/LinkedList.c.o:
+
+CMakeFiles/raycaster.dir/Fileloader.c.o:
+
+CMakeFiles/raycaster.dir/Ennemy.c.o:
 
 /usr/lib/gcc/x86_64-linux-gnu/15/../../../x86_64-linux-gnu/libglfw.so:
 

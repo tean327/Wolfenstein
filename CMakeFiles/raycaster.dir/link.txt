@@ -1,1 +1,1 @@
-/usr/bin/cc -Wl,--dependency-file=CMakeFiles/raycaster.dir/link.d CMakeFiles/raycaster.dir/main.c.o CMakeFiles/raycaster.dir/glad.c.o CMakeFiles/raycaster.dir/LinkedList.c.o -o raycaster  -lglfw -lGL -lX11 -lpthread -lXrandr -lXi -ldl -lm
+/usr/bin/cc -Wl,--dependency-file=CMakeFiles/raycaster.dir/link.d CMakeFiles/raycaster.dir/main.c.o CMakeFiles/raycaster.dir/glad.c.o CMakeFiles/raycaster.dir/LinkedList.c.o CMakeFiles/raycaster.dir/Fileloader.c.o CMakeFiles/raycaster.dir/Ennemy.c.o -o raycaster  -lglfw -lGL -lX11 -lpthread -lXrandr -lXi -ldl -lm

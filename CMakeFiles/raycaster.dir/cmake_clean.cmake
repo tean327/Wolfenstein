@@ -1,5 +1,9 @@
 file(REMOVE_RECURSE
   "CMakeFiles/raycaster.dir/link.d"
+  "CMakeFiles/raycaster.dir/Ennemy.c.o"
+  "CMakeFiles/raycaster.dir/Ennemy.c.o.d"
+  "CMakeFiles/raycaster.dir/Fileloader.c.o"
+  "CMakeFiles/raycaster.dir/Fileloader.c.o.d"
   "CMakeFiles/raycaster.dir/LinkedList.c.o"
   "CMakeFiles/raycaster.dir/LinkedList.c.o.d"
   "CMakeFiles/raycaster.dir/glad.c.o"

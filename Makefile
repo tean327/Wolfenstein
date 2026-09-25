@@ -129,6 +129,54 @@ raycaster/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/raycaster.dir/build.make CMakeFiles/raycaster.dir/build
 .PHONY : raycaster/fast
 
+Ennemy.o: Ennemy.c.o
+.PHONY : Ennemy.o
+
+# target to build an object file
+Ennemy.c.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/raycaster.dir/build.make CMakeFiles/raycaster.dir/Ennemy.c.o
+.PHONY : Ennemy.c.o
+
+Ennemy.i: Ennemy.c.i
+.PHONY : Ennemy.i
+
+# target to preprocess a source file
+Ennemy.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/raycaster.dir/build.make CMakeFiles/raycaster.dir/Ennemy.c.i
+.PHONY : Ennemy.c.i
+
+Ennemy.s: Ennemy.c.s
+.PHONY : Ennemy.s
+
+# target to generate assembly for a file
+Ennemy.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/raycaster.dir/build.make CMakeFiles/raycaster.dir/Ennemy.c.s
+.PHONY : Ennemy.c.s
+
+Fileloader.o: Fileloader.c.o
+.PHONY : Fileloader.o
+
+# target to build an object file
+Fileloader.c.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/raycaster.dir/build.make CMakeFiles/raycaster.dir/Fileloader.c.o
+.PHONY : Fileloader.c.o
+
+Fileloader.i: Fileloader.c.i
+.PHONY : Fileloader.i
+
+# target to preprocess a source file
+Fileloader.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/raycaster.dir/build.make CMakeFiles/raycaster.dir/Fileloader.c.i
+.PHONY : Fileloader.c.i
+
+Fileloader.s: Fileloader.c.s
+.PHONY : Fileloader.s
+
+# target to generate assembly for a file
+Fileloader.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/raycaster.dir/build.make CMakeFiles/raycaster.dir/Fileloader.c.s
+.PHONY : Fileloader.c.s
+
 LinkedList.o: LinkedList.c.o
 .PHONY : LinkedList.o
 
@@ -210,6 +258,12 @@ help:
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... raycaster"
+	@echo "... Ennemy.o"
+	@echo "... Ennemy.i"
+	@echo "... Ennemy.s"
+	@echo "... Fileloader.o"
+	@echo "... Fileloader.i"
+	@echo "... Fileloader.s"
 	@echo "... LinkedList.o"
 	@echo "... LinkedList.i"
 	@echo "... LinkedList.s"

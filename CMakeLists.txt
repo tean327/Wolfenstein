@@ -7,6 +7,9 @@ add_executable(raycaster
     main.c
     glad.c
     LinkedList.c
+    Fileloader.c
+    Ennemy.c
+    mathFuncs.c
 )
 
 target_include_directories(raycaster PRIVATE ./Librairies/include)
