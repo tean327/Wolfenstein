@@ -207,9 +207,8 @@ int main(int argc, char *argv[])
 
     loc = glGetUniformLocation(Program, "mvp");
 
-
-    //Allow us to blend the alpha of the textures
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); 
+    // Allow us to blend the alpha of the textures
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable(GL_BLEND);
     BMP *ppm = LoadBMP("assets/latest.bmp");
     unsigned int VAO_UI, VBO_UI_Vert, VBO_UI_UV;
@@ -233,35 +232,12 @@ int main(int argc, char *argv[])
         glEnableVertexAttribArray(1);
     }
 
-    Ennemy* ennemy = CreateEnnemy(3, 200, 200, HEIGHT, WIDTH);
-    unsigned int VAO_ENNEMY;
-    if(ennemy)
-    {
-        glUseProgram(Program);
-        glGenVertexArrays(1, &VAO_ENNEMY);
-        glBindVertexArray(VAO_ENNEMY);
-
-        glGenBuffers(1, &ennemy->VBOvert);
-        glBindBuffer(GL_ARRAY_BUFFER, ennemy->VBOvert);
-        glBufferData(GL_ARRAY_BUFFER, 18*sizeof(GLfloat), ennemy->vertices, GL_STATIC_DRAW);
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void *)0);
-        glEnableVertexAttribArray(0);
-
-        glGenBuffers(1, &ennemy->VBO_UV);
-        glBindBuffer(GL_ARRAY_BUFFER, ennemy->VBO_UV);
-        glBufferData(GL_ARRAY_BUFFER, 18*sizeof(GLfloat), ennemy->UV, GL_STATIC_DRAW);
-        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void *)0);    
-
-        glEnableVertexAttribArray(1);
-
-        for(int i = 0; i < 18; i++)
-            printf("%f\n", ennemy->vertices[i]);
-    }
-
+    Ennemy *ennemy = CreateEnnemy(3, 500, 200, Program, HEIGHT, WIDTH);
 
     while (!glfwWindowShouldClose(window) && !glfwWindowShouldClose(window3D))
     {
         glfwMakeContextCurrent(window);
+        glUseProgram(Program);
 
         for (int i = 0; i < 16; i++)
             model[i] = mat1[i];
@@ -284,9 +260,10 @@ int main(int argc, char *argv[])
         glDrawArrays(GL_LINES, 0, NUMBER_OF_RAYS * 2);
         glBindVertexArray(0);
 
-        if(ennemy)
+        if (ennemy)
         {
-            glBindVertexArray(VAO_ENNEMY);
+            glUseProgram(Program);
+            glBindVertexArray(VAO_Grid);
             glDrawArrays(GL_TRIANGLES, 0, 6);
             glBindVertexArray(0);
         }
