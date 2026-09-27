@@ -17,9 +17,18 @@ typedef struct
     unsigned int VBOvert;
     unsigned int VBO_UV;
     unsigned int VAO;
+
+    unsigned int VBOvert3D;
+    unsigned int VBO_UV3D;
+    unsigned int VAO3D;
     GLuint program;
+    GLfloat vertices3D[NUMBER_OF_RAYS * 6 * 3];
+    GLfloat UV3D[NUMBER_OF_RAYS * 6 * 3];
 } Ennemy;
 
 Ennemy *CreateEnnemy(int pPv, int posX, int posY, GLuint pProgram, int height, int width);
+void Generate3DVAOVOBSEnemy(Ennemy *ennemy);
+void FreeEnnemy(Ennemy **ennemy);
 
+int Draw3DEnnemies(Ennemy *Ennemy, Ray **rays, int playerPosX, int playerPosY, float playerAngle);
 #endif

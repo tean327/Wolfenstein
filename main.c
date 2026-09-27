@@ -5,14 +5,7 @@
 #include "LinkedList.h"
 #include "shaders.h"
 #include "FileLoader.h"
-#include "Ennemy.h"
-
-#define WIDTH 1200
-#define HEIGHT 800
-#define GRID_HEIGHT 8
-#define GRID_WIDTH 10
-#define NUMBER_OF_RAYS 360
-#define FOV PI / 3
+#include "Player.h"
 
 #define PLAYERSIZE 20
 
@@ -109,6 +102,8 @@ GLfloat CrossHairUV[6 * 2] = {
 
 Ray *rays[NUMBER_OF_RAYS];
 
+Ray *raysEnnemy[NUMBER_OF_RAYS];
+
 float deltaTime = 0.0f,
       playerPosX = 620, playerPosY = 410, playerAngle;
 float mouseSpeed = 0.005f;
@@ -124,8 +119,7 @@ Vector2 *origin;
 
 int Init();
 void CreateGrid();
-void CreatePlayer(unsigned int *VAO_Player, unsigned int *VBO_Player, unsigned int *VBO_Color_Player);
-void Player();
+void PlayerProcess(Player *player);
 int CheckCollision(float pPosX, float pPosY);
 Vector2 *ReturnCollisionPos(float pPosX, float pPosY);
 void RotatePlayer();
@@ -139,6 +133,10 @@ void freeRays(Ray *rays[], int arrSize);
 
 int main(int argc, char *argv[])
 {
+    Player *player = CreatePlayer(speed);
+    if (!player)
+        return 1;
+
     mousePos = (Vector2 *)malloc(sizeof(Vector2));
     lastMousePos = (Vector2 *)malloc(sizeof(Vector2));
     playerPos = (Vector2 *)malloc(sizeof(Vector2));
@@ -190,6 +188,9 @@ int main(int argc, char *argv[])
 
     glBindVertexArray(0);
 
+    Ennemy *ennemy = CreateEnnemy(3, 600, 150, Program, HEIGHT, WIDTH);
+
+    // After that everything will be bind only for the window3D
     glfwMakeContextCurrent(window3D);
     glUseProgram(Program);
     glGenVertexArrays(1, &VAO_Walls);
@@ -204,6 +205,8 @@ int main(int argc, char *argv[])
     glBindVertexArray(VAO_Grid);
 
     glfwSwapBuffers(window);
+
+    Generate3DVAOVOBSEnemy(ennemy);
 
     loc = glGetUniformLocation(Program, "mvp");
 
@@ -232,8 +235,7 @@ int main(int argc, char *argv[])
         glEnableVertexAttribArray(1);
     }
 
-    Ennemy *ennemy = CreateEnnemy(3, 500, 200, Program, HEIGHT, WIDTH);
-
+    int keySpacePreviousState = 0;
     while (!glfwWindowShouldClose(window) && !glfwWindowShouldClose(window3D))
     {
         glfwMakeContextCurrent(window);
@@ -262,13 +264,18 @@ int main(int argc, char *argv[])
 
         if (ennemy)
         {
-            glUseProgram(Program);
-            glBindVertexArray(VAO_Grid);
+            glUseProgram(ennemy->program);
+            glBindVertexArray(ennemy->VAO);
             glDrawArrays(GL_TRIANGLES, 0, 6);
             glBindVertexArray(0);
+
+            int currentSpaceState = KeyPressed(GLFW_KEY_SPACE);
+            if (currentSpaceState == 0 && currentSpaceState != keySpacePreviousState)
+                Shoot(player, ennemy);
+            keySpacePreviousState = currentSpaceState;
         }
 
-        Player();
+        PlayerProcess(player);
 
         glfwSwapBuffers(window);
 
@@ -279,12 +286,36 @@ int main(int argc, char *argv[])
         for (int i = 0; i < 16; i++)
             model[i] = mat1[i];
         glUniformMatrix4fv(loc, 1, GL_FALSE, model);
+
+        // Separe la fenetre en deux rectangle de couleur différente, pour toit et sol
+        glEnable(GL_SCISSOR_TEST);
+
+        glScissor(0, HEIGHT / 2, WIDTH, HEIGHT / 2);
+        glClearColor(0.7f, 0.5f, 0.7f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        glScissor(0, 0, WIDTH, HEIGHT / 2);
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        glDisable(GL_SCISSOR_TEST);
         Create3DWalls(&VAO_Walls, &VBO_3D_Vert, &VBO_3D_Color);
         glBindVertexArray(VAO_Walls);
         glDrawArrays(GL_TRIANGLES, 0, NUMBER_OF_RAYS * 6);
         glBindVertexArray(0);
 
-        // TODO if this is executed the crosshair will be garbage texture and this will turn all the scene on the y angle
+        if (ennemy)
+        {
+            int vertCount = Draw3DEnnemies(ennemy, rays, playerPosX, playerPosY, playerAngle);
+
+            if (vertCount > 0)
+            {
+                glBindVertexArray(ennemy->VAO3D);
+                glDrawArrays(GL_TRIANGLES, 0, vertCount);
+                glBindVertexArray(0);
+            }
+        }
+
         if (ppm)
         {
             glUseProgram(textProgram);
@@ -317,6 +348,8 @@ int main(int argc, char *argv[])
     glfwTerminate();
 
     freeRays(rays, NUMBER_OF_RAYS);
+    if (ennemy)
+        FreeEnnemy(&ennemy);
     free(origin);
     free(mousePos);
     free(lastMousePos);
@@ -403,6 +436,8 @@ int Init()
 
     glDeleteShader(vertexTextShader);
     glDeleteShader(fragmentTextShader);
+
+    glDepthFunc(GL_LEQUAL);
     return 0;
 }
 
@@ -481,11 +516,11 @@ void CreateGrid()
     printf("Grid Create\n");
 }
 
-void CreatePlayer(unsigned int *VAO_Player, unsigned int *VBO_Player, unsigned int *VBO_Color_Player)
-{
-}
+// void CreatePlayer(unsigned int *VAO_Player, unsigned int *VBO_Player, unsigned int *VBO_Color_Player)
+// {
+// }
 
-void Player()
+void PlayerProcess(Player *player)
 {
     if (KeyPressed(GLFW_KEY_W) && CheckCollision(playerPosX + PLAYERSIZE + cos(playerAngle) * deltaTime * speed, playerPosY + sin(playerAngle) * deltaTime * speed) == 0)
     {
@@ -515,6 +550,10 @@ void Player()
         playerPosY = HEIGHT / 2;
         playerAngle = 0;
     }
+
+    player->position.X = playerPosX;
+    player->position.Y = playerPosY;
+    player->angle = playerAngle;
     playerPos->X = ConvertToOpenGLX(playerPosX, WIDTH);
     playerPos->Y = ConvertToOpenGLY(playerPosY, HEIGHT);
 

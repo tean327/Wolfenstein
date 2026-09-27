@@ -1,6 +1,4 @@
 #include "mathFuncs.h"
-
-
 /// @brief Convert the x of a coordante from the screen plan to the openGL plan
 /// @return the converted coordonate x
 float ConvertToOpenGLX(float pCoord, int screenWidth)
@@ -72,4 +70,9 @@ float CalculRayDistance(float xA, float yA, float xB, float yB, float rayAngle, 
 {
     float normalRayDistance = sqrt(pow(xB - xA, 2) + pow(yB - yA, 2));
     return normalRayDistance * cos(rayAngle - playerAngle);
+}
+
+int IsInsideWindow(float x, float y, int ScreenHeight, int ScreenWidth)
+{
+    return (x >= 0 && x <= ScreenWidth && y >= 0 && y <= ScreenHeight);
 }
