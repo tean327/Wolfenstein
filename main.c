@@ -4,7 +4,6 @@
 #include "Librairies/include/GLFW/glfw3.h"
 #include "LinkedList.h"
 #include "shaders.h"
-#include "FileLoader.h"
 #include "Player.h"
 
 #define PLAYERSIZE 20
@@ -187,9 +186,14 @@ int main(int argc, char *argv[])
     CreateRayVAOsVBOs(&VAO_Rays, &VBO_RayVertices, &VBO_RayColor);
 
     glBindVertexArray(0);
+	
+	 // Allow us to blend the alpha of the textures
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glEnable(GL_BLEND);
+    Ennemy *ennemy = CreateEnnemy(3, 600, 150, textProgram, HEIGHT, WIDTH, "assets/guard.bmp");
 
-    Ennemy *ennemy = CreateEnnemy(3, 600, 150, Program, HEIGHT, WIDTH);
 
+	
     // After that everything will be bind only for the window3D
     glfwMakeContextCurrent(window3D);
     glUseProgram(Program);
@@ -268,11 +272,6 @@ int main(int argc, char *argv[])
             glBindVertexArray(ennemy->VAO);
             glDrawArrays(GL_TRIANGLES, 0, 6);
             glBindVertexArray(0);
-
-            int currentSpaceState = KeyPressed(GLFW_KEY_SPACE);
-            if (currentSpaceState == 0 && currentSpaceState != keySpacePreviousState)
-                Shoot(player, ennemy);
-            keySpacePreviousState = currentSpaceState;
         }
 
         PlayerProcess(player);
@@ -299,11 +298,7 @@ int main(int argc, char *argv[])
         glClear(GL_COLOR_BUFFER_BIT);
 
         glDisable(GL_SCISSOR_TEST);
-        Create3DWalls(&VAO_Walls, &VBO_3D_Vert, &VBO_3D_Color);
-        glBindVertexArray(VAO_Walls);
-        glDrawArrays(GL_TRIANGLES, 0, NUMBER_OF_RAYS * 6);
-        glBindVertexArray(0);
-
+        
         if (ennemy)
         {
             int vertCount = Draw3DEnnemies(ennemy, rays, playerPosX, playerPosY, playerAngle);
@@ -314,7 +309,16 @@ int main(int argc, char *argv[])
                 glDrawArrays(GL_TRIANGLES, 0, vertCount);
                 glBindVertexArray(0);
             }
+            int currentSpaceState = KeyPressed(GLFW_KEY_SPACE);
+            if (currentSpaceState == 0 && currentSpaceState != keySpacePreviousState)
+                Shoot(player, &ennemy);
+            keySpacePreviousState = currentSpaceState;
         }
+        
+        Create3DWalls(&VAO_Walls, &VBO_3D_Vert, &VBO_3D_Color);
+        glBindVertexArray(VAO_Walls);
+        glDrawArrays(GL_TRIANGLES, 0, NUMBER_OF_RAYS * 6);
+        glBindVertexArray(0);
 
         if (ppm)
         {

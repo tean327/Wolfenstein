@@ -10,6 +10,7 @@ add_executable(raycaster
     Fileloader.c
     Ennemy.c
     mathFuncs.c
+    Player.c
 )
 
 target_include_directories(raycaster PRIVATE ./Librairies/include)

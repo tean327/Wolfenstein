@@ -1,7 +1,7 @@
 #include "Ennemy.h"
 #include <stdio.h>
 
-Ennemy *CreateEnnemy(int pPv, int posX, int posY, GLuint pProgram, int height, int width)
+Ennemy *CreateEnnemy(int pPv, int posX, int posY, GLuint pProgram, int height, int width, char *pFilename)
 {
     Ennemy *ennemy = (Ennemy *)malloc(sizeof(Ennemy));
     if (!ennemy)
@@ -11,6 +11,10 @@ Ennemy *CreateEnnemy(int pPv, int posX, int posY, GLuint pProgram, int height, i
 
     ennemy->position = (Vector2 *)malloc(sizeof(Vector2));
     ennemy->size = (Vector2 *)malloc(sizeof(Vector2));
+    
+   ennemy->texture = LoadBMP(pFilename);
+   if(!ennemy->texture)
+   		return NULL;
 
     if (!ennemy->position || !ennemy->size)
         return NULL;
@@ -31,12 +35,12 @@ Ennemy *CreateEnnemy(int pPv, int posX, int posY, GLuint pProgram, int height, i
         ConvertToOpenGLX(ennemy->size->X, width), ConvertToOpenGLY(ennemy->size->Y, height), 0.0f};
 
     GLfloat color[18] = {
-        1.0f, 0.0f, 0.0f,
-        1.0f, 0.0f, 0.0f,
-        1.0f, 0.0f, 0.0f,
-        1.0f, 0.0f, 0.0f,
-        1.0f, 0.0f, 0.0f,
-        1.0f, 0.0f, 0.0f};
+		0.0f, 1.0f,
+		1.0f, 1.0f,
+		1.0f, 0.0f,
+		1.0f, 0.0f,
+		0.0f, 0.0f,
+		0.0f, 1.0f};
 
     // Copy of vertices into the ennemy->vertices array
     // We can't assign it directly because ennemy->vertices has already been created
@@ -59,8 +63,8 @@ Ennemy *CreateEnnemy(int pPv, int posX, int posY, GLuint pProgram, int height, i
 
     glGenBuffers(1, &ennemy->VBO_UV);
     glBindBuffer(GL_ARRAY_BUFFER, ennemy->VBO_UV);
-    glBufferData(GL_ARRAY_BUFFER, 18 * sizeof(GLfloat), ennemy->UV, GL_STATIC_DRAW);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void *)0);
+    glBufferData(GL_ARRAY_BUFFER, 12 * sizeof(GLfloat), ennemy->UV, GL_STATIC_DRAW);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, (void *)0);
 
     glEnableVertexAttribArray(1);
 
@@ -81,19 +85,18 @@ void Generate3DVAOVOBSEnemy(Ennemy *ennemy)
 
     glGenBuffers(1, &ennemy->VBO_UV3D);
     glBindBuffer(GL_ARRAY_BUFFER, ennemy->VBO_UV3D);
-    glBufferData(GL_ARRAY_BUFFER, 18 * sizeof(GLfloat), ennemy->UV3D, GL_STATIC_DRAW);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void *)0);
+    glBufferData(GL_ARRAY_BUFFER, 12 * sizeof(GLfloat), ennemy->UV3D, GL_STATIC_DRAW);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, (void *)0);
 
     glEnableVertexAttribArray(1);
 }
 
 void FreeEnnemy(Ennemy **ennemy)
 {
-    glDeleteVertexArrays(1, &(*ennemy)->VAO);
-    glDeleteBuffers(1, &(*ennemy)->VBOvert);
-    glDeleteBuffers(1, &(*ennemy)->VBO_UV);
+    //glDeleteVertexArrays(1, &(*ennemy)->VAO);
+    //glDeleteBuffers(1, &(*ennemy)->VBOvert);
+    //glDeleteBuffers(1, &(*ennemy)->VBO_UV);
 
-    printf("Freedat\n");
     free((*ennemy)->position);
     free((*ennemy)->size);
     free(*ennemy);

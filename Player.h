@@ -18,5 +18,5 @@ typedef struct
 } Player;
 
 Player *CreatePlayer(int speed);
-void Shoot(Player *player, Ennemy *ennemy);
+void Shoot(Player *player, Ennemy **ennemy);
 #endif

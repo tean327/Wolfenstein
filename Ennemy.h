@@ -3,6 +3,7 @@
 
 #include "Librairies/include/glad/glad.h"
 #include "mathFuncs.h"
+#include "FileLoader.h"
 #include <stdlib.h>
 
 #define ENNEMY_SIZE 50
@@ -13,7 +14,7 @@ typedef struct
     Vector2 *position;
     Vector2 *size;
     GLfloat vertices[6 * 3];
-    GLfloat UV[6 * 3];
+    GLfloat UV[6 * 2];
     unsigned int VBOvert;
     unsigned int VBO_UV;
     unsigned int VAO;
@@ -23,10 +24,12 @@ typedef struct
     unsigned int VAO3D;
     GLuint program;
     GLfloat vertices3D[NUMBER_OF_RAYS * 6 * 3];
-    GLfloat UV3D[NUMBER_OF_RAYS * 6 * 3];
+    GLfloat UV3D[NUMBER_OF_RAYS * 6 * 2];
+    
+    BMP *texture;
 } Ennemy;
 
-Ennemy *CreateEnnemy(int pPv, int posX, int posY, GLuint pProgram, int height, int width);
+Ennemy *CreateEnnemy(int pPv, int posX, int posY, GLuint pProgram, int height, int width, char* pFilename);
 void Generate3DVAOVOBSEnemy(Ennemy *ennemy);
 void FreeEnnemy(Ennemy **ennemy);
 
