@@ -18,7 +18,7 @@ Player *CreatePlayer(int speed)
 
 void Shoot(Player *player, Ennemy **ennemy)
 {
-    printf("Piou Piou\n");
+    printf("Piou Piou\n");  
     float x, y;
     x = player->position.X;
     y = player->position.Y;

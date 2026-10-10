@@ -2,7 +2,7 @@
 #define ENNEMY_H_
 
 #include "Librairies/include/glad/glad.h"
-#include "mathFuncs.h"
+#include "Ray.h"
 #include "FileLoader.h"
 #include <stdlib.h>
 
@@ -24,7 +24,7 @@ typedef struct
     unsigned int VAO3D;
     GLuint program;
     GLfloat vertices3D[NUMBER_OF_RAYS * 6 * 3];
-    GLfloat UV3D[NUMBER_OF_RAYS * 6 * 2];
+    GLfloat UV3D[NUMBER_OF_RAYS * 6 * 3];
     
     BMP *texture;
 } Ennemy;

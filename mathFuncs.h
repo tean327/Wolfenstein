@@ -1,7 +1,6 @@
 #ifndef MATH_FUNCTIONS_H_
 #define MATH_FUNCTIONS_H_
 #include <math.h>
-#include "LinkedList.h"
 
 #define WIDTH 1200
 #define HEIGHT 800
@@ -10,6 +9,12 @@
 #define NUMBER_OF_RAYS 360
 #define FOV (PI / 3)
 #define PI 3.141592653589793
+
+typedef struct nodeVector2
+{
+    double X;
+    double Y;
+} Vector2;
 
 /// @brief Convert the x of a coordante from the screen plan to the openGL plan
 /// @return the converted coordonate x

@@ -134,7 +134,7 @@ int main(int argc, char *argv[])
 {
     Player *player = CreatePlayer(speed);
     if (!player)
-        return 1;
+        return 2;
 
     mousePos = (Vector2 *)malloc(sizeof(Vector2));
     lastMousePos = (Vector2 *)malloc(sizeof(Vector2));
@@ -142,6 +142,11 @@ int main(int argc, char *argv[])
     origin = (Vector2 *)malloc(sizeof(Vector2));
     origin->X = ConvertToOpenGLX(WIDTH / 2 - PLAYERSIZE / 2, WIDTH);
     origin->Y = ConvertToOpenGLY(HEIGHT / 2 - PLAYERSIZE / 2, HEIGHT);
+
+    ListEnnemy *ennemyHead = (ListEnnemy*)malloc(sizeof(ListEnnemy));
+    if(!ennemyHead)
+        return 2;
+
     if (Init() == 1)
         return 1;
 
@@ -190,9 +195,18 @@ int main(int argc, char *argv[])
 	 // Allow us to blend the alpha of the textures
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable(GL_BLEND);
+
     Ennemy *ennemy = CreateEnnemy(3, 600, 150, textProgram, HEIGHT, WIDTH, "assets/guard.bmp");
+    printf("ENNEMY 1: POS(%f, %f), SIZE(%f, %f)\n", ennemy->position->X, ennemy->position->Y, ennemy->size->X, ennemy->size->Y);
+    AddAtEndOfListEnnemy(ennemy, ennemyHead);
 
+    Ennemy *ennemy2 = CreateEnnemy(3, 200, 200, textProgram, HEIGHT, WIDTH, "assets/guard.bmp");
+    printf("ENNEMY 2: POS(%f, %f), SIZE(%f, %f)\n", ennemy2->position->X, ennemy2->position->Y, ennemy2->size->X, ennemy2->size->Y);
+    AddAtEndOfListEnnemy(ennemy2, ennemyHead);
 
+    Ennemy *ennemy3 = CreateEnnemy(3, 900, 500, textProgram, HEIGHT, WIDTH, "assets/guard.bmp");
+    printf("ENNEMY 3: POS(%f, %f), SIZE(%f, %f)\n", ennemy3->position->X, ennemy3->position->Y, ennemy3->size->X, ennemy3->size->Y);
+    AddAtEndOfListEnnemy(ennemy3, ennemyHead);
 	
     // After that everything will be bind only for the window3D
     glfwMakeContextCurrent(window3D);
@@ -211,6 +225,8 @@ int main(int argc, char *argv[])
     glfwSwapBuffers(window);
 
     Generate3DVAOVOBSEnemy(ennemy);
+    Generate3DVAOVOBSEnemy(ennemy2);
+    Generate3DVAOVOBSEnemy(ennemy3);
 
     loc = glGetUniformLocation(Program, "mvp");
 
@@ -274,6 +290,22 @@ int main(int argc, char *argv[])
             glBindVertexArray(0);
         }
 
+        if (ennemy2)
+        {
+            glUseProgram(ennemy2->program);
+            glBindVertexArray(ennemy2->VAO);
+            glDrawArrays(GL_TRIANGLES, 0, 6);
+            glBindVertexArray(0);
+        }
+
+        if (ennemy3)
+        {
+            glUseProgram(ennemy3->program);
+            glBindVertexArray(ennemy3->VAO);
+            glDrawArrays(GL_TRIANGLES, 0, 6);
+            glBindVertexArray(0);
+        }
+
         PlayerProcess(player);
 
         glfwSwapBuffers(window);
@@ -299,19 +331,28 @@ int main(int argc, char *argv[])
 
         glDisable(GL_SCISSOR_TEST);
         
-        if (ennemy)
+        if (ennemyHead)
         {
-            int vertCount = Draw3DEnnemies(ennemy, rays, playerPosX, playerPosY, playerAngle);
-
-            if (vertCount > 0)
-            {
-                glBindVertexArray(ennemy->VAO3D);
-                glDrawArrays(GL_TRIANGLES, 0, vertCount);
-                glBindVertexArray(0);
-            }
+            ListEnnemy *crrnt = ennemyHead->next;
             int currentSpaceState = KeyPressed(GLFW_KEY_SPACE);
-            if (currentSpaceState == 0 && currentSpaceState != keySpacePreviousState)
-                Shoot(player, &ennemy);
+            while(crrnt)
+            {
+                int vertCount = Draw3DEnnemies(crrnt->VALUE, rays, playerPosX, playerPosY, playerAngle);
+                if (vertCount > 0)
+                {
+                    glBindVertexArray(crrnt->VALUE->VAO3D);
+                    glDrawArrays(GL_TRIANGLES, 0, vertCount);
+                    glBindVertexArray(0);
+                }
+                
+                if (currentSpaceState == 0 && currentSpaceState != keySpacePreviousState)
+                {
+                    Shoot(player, &crrnt->VALUE);
+                    if(!crrnt->VALUE)
+                        free(crrnt);
+                }
+                crrnt = crrnt->next;
+            }
             keySpacePreviousState = currentSpaceState;
         }
         
@@ -359,6 +400,7 @@ int main(int argc, char *argv[])
     free(lastMousePos);
     free(playerPos);
     FreeListWallMemory(head);
+    FreeListEnnemyMemory(ennemyHead);
     return 0;
 }
 

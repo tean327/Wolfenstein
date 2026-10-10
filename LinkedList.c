@@ -1,24 +1,9 @@
+#include"LinkedList.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-typedef struct nodeVector2
-{
-    double X;
-    double Y;
-} Vector2;
-
-typedef struct nodeWall
-{
-    Vector2 *position;
-    Vector2 *size;
-} Wall;
-
-typedef struct ListWallNode
-{
-    Wall *VALUE;
-    struct ListWallNode *next;
-} ListWall;
 
 void AddAtEndOfListWall(Wall *value, ListWall *head)
 {
@@ -49,7 +34,6 @@ void AddAtEndOfListWall(Wall *value, ListWall *head)
             current = current->next;
         }
         current->next = newNode;
-        return;
     }
 }
 
@@ -81,6 +65,45 @@ void FreeListWallMemory(ListWall *head)
         free(tmp->VALUE->position);
         free(tmp->VALUE->size);
         free(tmp->VALUE);
+        free(tmp);
+    }
+}
+
+
+void AddAtEndOfListEnnemy(Ennemy *value, ListEnnemy *head)
+{
+    ListEnnemy *newNode = (ListEnnemy *)malloc(sizeof(ListEnnemy));
+    if (newNode == NULL)
+    {
+        printf("Unable to allocate memory for new node\n");
+        return;
+    }
+    newNode->VALUE = value;
+    newNode->next = NULL;
+
+    if (head->next == NULL)
+    {
+        head->next = newNode;
+    }
+    else
+    {
+        ListEnnemy *current = head;
+        while (current->next != NULL)
+        {
+            current = current->next;
+        }
+        current->next = newNode;
+    }
+}
+
+void FreeListEnnemyMemory(ListEnnemy *head)
+{
+    ListEnnemy *tmp;
+    while (head != NULL)
+    {
+        tmp = head;
+        head = head->next;
+        FreeEnnemy(&tmp->VALUE);
         free(tmp);
     }
 }

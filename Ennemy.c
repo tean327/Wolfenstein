@@ -136,6 +136,9 @@ int Draw3DEnnemies(Ennemy *ennemy, Ray **rays, int playerPosX, int playerPosY, f
         perpDist = 20.0f;
 
     float spriteScreenX = WIDTH * (relAngle + FOV / 2.0f) / FOV;
+
+    if (perpDist * zoom <= 0.1f)
+        return 0; 
     float spriteHeight = projPlaneDist / (perpDist * zoom);
     float spriteWidth = spriteHeight;
 
