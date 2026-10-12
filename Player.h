@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "mathFuncs.h"
-#include "Ennemy.h"
+#include "EnnemyFuncs.h"
 
 #define PLAYER_SIZE 20
 #define PLAYER_ORIGINAL_POS_X 620
@@ -18,5 +18,5 @@ typedef struct
 } Player;
 
 Player *CreatePlayer(int speed);
-void Shoot(Player *player, Ennemy **ennemy);
+void Shoot(Player *player, ListEnnemy **ennemyNode);
 #endif

@@ -93,6 +93,7 @@ void AddAtEndOfListEnnemy(Ennemy *value, ListEnnemy *head)
             current = current->next;
         }
         current->next = newNode;
+        newNode->previous = current;
     }
 }
 

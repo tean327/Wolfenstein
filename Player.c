@@ -16,7 +16,7 @@ Player *CreatePlayer(int speed)
     return player;
 }
 
-void Shoot(Player *player, Ennemy **ennemy)
+void Shoot(Player *player, ListEnnemy **ennemyNode)
 {
     printf("Piou Piou\n");  
     float x, y;
@@ -24,15 +24,17 @@ void Shoot(Player *player, Ennemy **ennemy)
     y = player->position.Y;
     float distance = 2;
 
+    Ennemy* ennemy = (*ennemyNode)->VALUE;
+
     int hasTouch = 0;
     while (hasTouch == 0 && IsInsideWindow(x, y, 800, 1200) != 0)
     {
-        if (x >= (*ennemy)->position->X && x <= (*ennemy)->size->X && y >= (*ennemy)->position->Y && y <= (*ennemy)->size->Y)
+        if (x >= ennemy->position->X && x <= ennemy->size->X && y >= ennemy->position->Y && y <= ennemy->size->Y)
         {
             hasTouch = 1;
-            if (--(*ennemy)->pv <= 0)
+            if (--ennemy->pv <= 0)
             {
-                FreeEnnemy(ennemy);
+                KillEnnemy(ennemyNode);
             }
             break;
         }

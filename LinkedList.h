@@ -20,6 +20,7 @@ typedef struct ListWallNode
 typedef struct ListEnnemyNode
 {
     Ennemy* VALUE;
+    struct ListEnnemyNode* previous;
     struct ListEnnemyNode* next;
 } ListEnnemy;
 

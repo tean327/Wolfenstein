@@ -347,7 +347,7 @@ int main(int argc, char *argv[])
                 
                 if (currentSpaceState == 0 && currentSpaceState != keySpacePreviousState)
                 {
-                    Shoot(player, &crrnt->VALUE);
+                    Shoot(player, &crrnt);
                     if(!crrnt->VALUE)
                         free(crrnt);
                 }
