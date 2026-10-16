@@ -11,4 +11,7 @@ typedef struct nodeRay
     float rayAngle;
 } Ray;
 
+
+void freeRays(Ray *rays[], int arrSize);
+
 #endif

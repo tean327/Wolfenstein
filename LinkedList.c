@@ -84,10 +84,11 @@ void AddAtEndOfListEnnemy(Ennemy *value, ListEnnemy *head)
     if (head->next == NULL)
     {
         head->next = newNode;
+        newNode->previous = head;
     }
     else
     {
-        ListEnnemy *current = head;
+        ListEnnemy *current = head->next;
         while (current->next != NULL)
         {
             current = current->next;

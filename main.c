@@ -282,29 +282,8 @@ int main(int argc, char *argv[])
         glDrawArrays(GL_LINES, 0, NUMBER_OF_RAYS * 2);
         glBindVertexArray(0);
 
-        if (ennemy)
-        {
-            glUseProgram(ennemy->program);
-            glBindVertexArray(ennemy->VAO);
-            glDrawArrays(GL_TRIANGLES, 0, 6);
-            glBindVertexArray(0);
-        }
-
-        if (ennemy2)
-        {
-            glUseProgram(ennemy2->program);
-            glBindVertexArray(ennemy2->VAO);
-            glDrawArrays(GL_TRIANGLES, 0, 6);
-            glBindVertexArray(0);
-        }
-
-        if (ennemy3)
-        {
-            glUseProgram(ennemy3->program);
-            glBindVertexArray(ennemy3->VAO);
-            glDrawArrays(GL_TRIANGLES, 0, 6);
-            glBindVertexArray(0);
-        }
+        if(ennemyHead)
+            Draw2DEnnemies(ennemyHead);
 
         PlayerProcess(player);
 
@@ -337,7 +316,7 @@ int main(int argc, char *argv[])
             int currentSpaceState = KeyPressed(GLFW_KEY_SPACE);
             while(crrnt)
             {
-                int vertCount = Draw3DEnnemies(crrnt->VALUE, rays, playerPosX, playerPosY, playerAngle);
+                int vertCount = CreateEnnemy3DVertices(crrnt->VALUE, rays, playerPosX, playerPosY, playerAngle);
                 if (vertCount > 0)
                 {
                     glBindVertexArray(crrnt->VALUE->VAO3D);
@@ -354,8 +333,11 @@ int main(int argc, char *argv[])
                 crrnt = crrnt->next;
             }
             keySpacePreviousState = currentSpaceState;
+
+           // Draw3DEnnemies(ennemyHead, keySpacePreviousState, currentSpaceState, player, rays);
+
         }
-        
+
         Create3DWalls(&VAO_Walls, &VBO_3D_Vert, &VBO_3D_Color);
         glBindVertexArray(VAO_Walls);
         glDrawArrays(GL_TRIANGLES, 0, NUMBER_OF_RAYS * 6);
@@ -387,6 +369,7 @@ int main(int argc, char *argv[])
     glDeleteVertexArrays(1, &VAO_Walls);
 
     glDeleteProgram(Program);
+    glDeleteProgram(textProgram);
 
     glfwDestroyWindow(window);
     glfwDestroyWindow(window3D);

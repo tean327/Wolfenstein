@@ -33,5 +33,5 @@ Ennemy *CreateEnnemy(int pPv, int posX, int posY, GLuint pProgram, int height, i
 void Generate3DVAOVOBSEnemy(Ennemy *ennemy);
 void FreeEnnemy(Ennemy **ennemy);
 
-int Draw3DEnnemies(Ennemy *Ennemy, Ray **rays, int playerPosX, int playerPosY, float playerAngle);
+int CreateEnnemy3DVertices(Ennemy *Ennemy, Ray **rays, int playerPosX, int playerPosY, float playerAngle);
 #endif

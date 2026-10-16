@@ -103,7 +103,7 @@ void FreeEnnemy(Ennemy **ennemy)
     *ennemy = NULL;
 }
 
-int Draw3DEnnemies(Ennemy *ennemy, Ray **rays, int playerPosX, int playerPosY, float playerAngle)
+int CreateEnnemy3DVertices(Ennemy *ennemy, Ray **rays, int playerPosX, int playerPosY, float playerAngle)
 {
     if (!ennemy)
         return 0;
