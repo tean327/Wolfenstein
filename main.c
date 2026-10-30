@@ -5,6 +5,7 @@
 #include "LinkedList.h"
 #include "shaders.h"
 #include "Player.h"
+#include "Ray.h"
 
 #define PLAYERSIZE 20
 
@@ -128,7 +129,7 @@ void Create3DWalls(unsigned int *VAO_Walls, unsigned int *VBO_Walls, unsigned in
 void CreateRayVAOsVBOs(unsigned int *VAO_Ray, unsigned int *VBO_RayVertices, unsigned int *VBO_Color);
 void CreateWallsVAOsVBOs(unsigned int *VAO_Walls, unsigned int *VBO_Wallvertices, unsigned int *VBO_Color);
 int KeyPressed(int key);
-void freeRays(Ray *rays[], int arrSize);
+// void freeRays(Ray *rays[], int arrSize);
 
 int main(int argc, char *argv[])
 {
@@ -143,8 +144,9 @@ int main(int argc, char *argv[])
     origin->X = ConvertToOpenGLX(WIDTH / 2 - PLAYERSIZE / 2, WIDTH);
     origin->Y = ConvertToOpenGLY(HEIGHT / 2 - PLAYERSIZE / 2, HEIGHT);
 
-    ListEnnemy *ennemyHead = (ListEnnemy*)malloc(sizeof(ListEnnemy));
-    if(!ennemyHead)
+    ListEnnemy *ennemyHead = (ListEnnemy *)malloc(sizeof(ListEnnemy));
+    ennemyHead->next = ennemyHead->previous = NULL;
+    if (!ennemyHead)
         return 2;
 
     if (Init() == 1)
@@ -191,8 +193,8 @@ int main(int argc, char *argv[])
     CreateRayVAOsVBOs(&VAO_Rays, &VBO_RayVertices, &VBO_RayColor);
 
     glBindVertexArray(0);
-	
-	 // Allow us to blend the alpha of the textures
+
+    // Allow us to blend the alpha of the textures
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable(GL_BLEND);
 
@@ -207,7 +209,7 @@ int main(int argc, char *argv[])
     Ennemy *ennemy3 = CreateEnnemy(3, 900, 500, textProgram, HEIGHT, WIDTH, "assets/guard.bmp");
     printf("ENNEMY 3: POS(%f, %f), SIZE(%f, %f)\n", ennemy3->position->X, ennemy3->position->Y, ennemy3->size->X, ennemy3->size->Y);
     AddAtEndOfListEnnemy(ennemy3, ennemyHead);
-	
+
     // After that everything will be bind only for the window3D
     glfwMakeContextCurrent(window3D);
     glUseProgram(Program);
@@ -282,7 +284,7 @@ int main(int argc, char *argv[])
         glDrawArrays(GL_LINES, 0, NUMBER_OF_RAYS * 2);
         glBindVertexArray(0);
 
-        if(ennemyHead)
+        if (ennemyHead)
             Draw2DEnnemies(ennemyHead);
 
         PlayerProcess(player);
@@ -309,12 +311,12 @@ int main(int argc, char *argv[])
         glClear(GL_COLOR_BUFFER_BIT);
 
         glDisable(GL_SCISSOR_TEST);
-        
+
         if (ennemyHead)
         {
             ListEnnemy *crrnt = ennemyHead->next;
             int currentSpaceState = KeyPressed(GLFW_KEY_SPACE);
-            while(crrnt)
+            while (crrnt)
             {
                 int vertCount = CreateEnnemy3DVertices(crrnt->VALUE, rays, playerPosX, playerPosY, playerAngle);
                 if (vertCount > 0)
@@ -323,19 +325,18 @@ int main(int argc, char *argv[])
                     glDrawArrays(GL_TRIANGLES, 0, vertCount);
                     glBindVertexArray(0);
                 }
-                
+
                 if (currentSpaceState == 0 && currentSpaceState != keySpacePreviousState)
                 {
                     Shoot(player, &crrnt);
-                    if(!crrnt->VALUE)
+                    if (!crrnt->VALUE)
                         free(crrnt);
                 }
                 crrnt = crrnt->next;
             }
             keySpacePreviousState = currentSpaceState;
 
-           // Draw3DEnnemies(ennemyHead, keySpacePreviousState, currentSpaceState, player, rays);
-
+            // Draw3DEnnemies(ennemyHead, keySpacePreviousState, currentSpaceState, player, rays);
         }
 
         Create3DWalls(&VAO_Walls, &VBO_3D_Vert, &VBO_3D_Color);
@@ -823,14 +824,4 @@ void CreateWallsVAOsVBOs(unsigned int *VAO_Wall, unsigned int *VBO_Wall_Vertices
 int KeyPressed(int key)
 {
     return glfwGetKey(window, key) || glfwGetKey(window3D, key);
-}
-
-void freeRays(Ray *rays[], int arrSize)
-{
-    for (int i = 0; i < arrSize; i++)
-    {
-        free(rays[i]->pointA);
-        free(rays[i]->pointB);
-        free(rays[i]);
-    }
 }

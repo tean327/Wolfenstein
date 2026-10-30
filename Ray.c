@@ -1,4 +1,6 @@
-#include"Ray.h"
+#include "Ray.h"
+
+#include <stdlib.h>
 
 void freeRays(Ray *rays[], int arrSize)
 {
