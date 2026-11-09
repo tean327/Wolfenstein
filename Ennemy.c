@@ -91,11 +91,30 @@ void Generate3DVAOVOBSEnemy(Ennemy *ennemy)
     glEnableVertexAttribArray(1);
 }
 
-void FreeEnnemy(Ennemy **ennemy)
+void FreeEnnemy(Ennemy **ennemy, GLFWwindow *window2D, GLFWwindow *window3D)
 {
-    //glDeleteVertexArrays(1, &(*ennemy)->VAO);
-    //glDeleteBuffers(1, &(*ennemy)->VBOvert);
-    //glDeleteBuffers(1, &(*ennemy)->VBO_UV);
+
+    // Exemple de vérification d'erreur rapide
+    GLenum err;
+    while((err = glGetError()) != GL_NO_ERROR) {
+        printf("Erreur OpenGL AVANT la suppression : %u", err);
+    }
+
+    glfwMakeContextCurrent(window2D);
+    glDeleteVertexArrays(1, &(*ennemy)->VAO);
+    glDeleteBuffers(1, &(*ennemy)->VBOvert);
+    glDeleteBuffers(1, &(*ennemy)->VBO_UV);
+
+    glfwMakeContextCurrent(window3D);
+    glDeleteVertexArrays(1, &(*ennemy)->VAO3D);
+    glDeleteBuffers(1, &(*ennemy)->VBOvert3D);
+    glDeleteBuffers(1, &(*ennemy)->VBO_UV3D);
+
+
+
+    while((err = glGetError()) != GL_NO_ERROR) {
+        printf("Erreur OpenGL APRES la suppression : %u", err);
+    }
 
     free((*ennemy)->position);
     free((*ennemy)->size);
@@ -175,7 +194,6 @@ int CreateEnnemy3DVertices(Ennemy *ennemy, Ray **rays, int playerPosX, int playe
             ennemy->vertices3D[j + v * 3 + 1] = ConvertToOpenGLY(yS[v], HEIGHT);
             ennemy->vertices3D[j + v * 3 + 2] = 0.0f;
 
-            /* couleur unie rouge en attendant la texture */
             ennemy->UV3D[j + v * 3 + 0] = 1.0f;
             ennemy->UV3D[j + v * 3 + 1] = 0.0f;
             ennemy->UV3D[j + v * 3 + 2] = 0.0f;
@@ -187,12 +205,10 @@ int CreateEnnemy3DVertices(Ennemy *ennemy, Ray **rays, int playerPosX, int playe
     if (vertexcount > 0)
     {
         glBindBuffer(GL_ARRAY_BUFFER, ennemy->VBOvert3D);
-        glBufferData(GL_ARRAY_BUFFER, vertexcount * 3 * sizeof(GLfloat),
-                     ennemy->vertices3D, GL_DYNAMIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, vertexcount * 3 * sizeof(GLfloat),ennemy->vertices3D, GL_DYNAMIC_DRAW);
 
         glBindBuffer(GL_ARRAY_BUFFER, ennemy->VBO_UV3D);
-        glBufferData(GL_ARRAY_BUFFER, vertexcount * 3 * sizeof(GLfloat),
-                     ennemy->UV3D, GL_DYNAMIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, vertexcount * 3 * sizeof(GLfloat),ennemy->UV3D, GL_DYNAMIC_DRAW);
     }
 
     return vertexcount;

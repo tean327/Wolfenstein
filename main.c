@@ -143,7 +143,7 @@ int main(int argc, char *argv[])
     origin->X = ConvertToOpenGLX(WIDTH / 2 - PLAYERSIZE / 2, WIDTH);
     origin->Y = ConvertToOpenGLY(HEIGHT / 2 - PLAYERSIZE / 2, HEIGHT);
 
-    ListEnnemy *ennemyHead = (ListEnnemy*)malloc(sizeof(ListEnnemy));
+    ListEnnemy *ennemyHead = (ListEnnemy*)calloc(1, sizeof(ListEnnemy));
     if(!ennemyHead)
         return 2;
 
@@ -326,9 +326,12 @@ int main(int argc, char *argv[])
                 
                 if (currentSpaceState == 0 && currentSpaceState != keySpacePreviousState)
                 {
-                    Shoot(player, &crrnt);
-                    if(!crrnt->VALUE)
-                        free(crrnt);
+                    ListEnnemy *next = crrnt->next;
+                    if (Shoot(player, &crrnt, window, window3D))
+                    {
+                        crrnt = next;
+                        continue;
+                    }
                 }
                 crrnt = crrnt->next;
             }
@@ -364,6 +367,8 @@ int main(int argc, char *argv[])
         glfwPollEvents();
     }
 
+    FreeListEnnemyMemory(ennemyHead, window, window3D);
+
     glDeleteVertexArrays(1, &VAO_Grid);
     glDeleteVertexArrays(1, &VAO_Rays);
     glDeleteVertexArrays(1, &VAO_Walls);
@@ -376,14 +381,11 @@ int main(int argc, char *argv[])
     glfwTerminate();
 
     freeRays(rays, NUMBER_OF_RAYS);
-    if (ennemy)
-        FreeEnnemy(&ennemy);
     free(origin);
     free(mousePos);
     free(lastMousePos);
     free(playerPos);
     FreeListWallMemory(head);
-    FreeListEnnemyMemory(ennemyHead);
     return 0;
 }
 
@@ -721,7 +723,10 @@ void DrawRays(unsigned int *VAO_Ray, unsigned int *VBO_RayVertices, unsigned int
         rays[i]->norme = CalculRayDistance(playerPosX, playerPosY, x, y, angle, playerAngle);
         rays[i]->rayAngle = angle;
         if (lVector != NULL)
+        {
+            free(rays[i]->pointB);
             rays[i]->pointB = lVector;
+        }
         else
         {
             rays[i]->pointB->X = x;

@@ -98,14 +98,14 @@ void AddAtEndOfListEnnemy(Ennemy *value, ListEnnemy *head)
     }
 }
 
-void FreeListEnnemyMemory(ListEnnemy *head)
+void FreeListEnnemyMemory(ListEnnemy *head, GLFWwindow *window2D, GLFWwindow *window3D)
 {
     ListEnnemy *tmp;
     while (head != NULL)
     {
         tmp = head;
         head = head->next;
-        FreeEnnemy(&tmp->VALUE);
+        FreeEnnemy(&tmp->VALUE, window2D, window3D);
         free(tmp);
     }
 }

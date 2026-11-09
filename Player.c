@@ -16,7 +16,7 @@ Player *CreatePlayer(int speed)
     return player;
 }
 
-void Shoot(Player *player, ListEnnemy **ennemyNode)
+int Shoot(Player *player, ListEnnemy **ennemyNode, GLFWwindow *window2D, GLFWwindow *window3D)
 {
     printf("Piou Piou\n");  
     float x, y;
@@ -34,13 +34,15 @@ void Shoot(Player *player, ListEnnemy **ennemyNode)
             hasTouch = 1;
             if (--ennemy->pv <= 0)
             {
-                KillEnnemy(ennemyNode);
+                KillEnnemy(ennemyNode, window2D, window3D);
+                return 1;
             }
             break;
         }
         x += distance * cos(player->angle);
         y -= distance * sin(player->angle);
     }
+    return 0;
 }
 
 // void CreatePlayer(unsigned int *VAO_Player, unsigned int *VBO_Player, unsigned int *VBO_Color_Player)

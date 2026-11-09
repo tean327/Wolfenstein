@@ -6,7 +6,7 @@
 #include"Player.h"
 #include"Ray.h"
 
-void KillEnnemy(ListEnnemy** node);
+void KillEnnemy(ListEnnemy** node, GLFWwindow *window2D, GLFWwindow *window3D);
 void Draw2DEnnemies(ListEnnemy *ennemyHead);
 
 #endif

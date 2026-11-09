@@ -2,6 +2,7 @@
 #define ENNEMY_H_
 
 #include "Librairies/include/glad/glad.h"
+#include "Librairies/include/GLFW/glfw3.h"
 #include "Ray.h"
 #include "FileLoader.h"
 #include <stdlib.h>
@@ -31,7 +32,7 @@ typedef struct
 
 Ennemy *CreateEnnemy(int pPv, int posX, int posY, GLuint pProgram, int height, int width, char* pFilename);
 void Generate3DVAOVOBSEnemy(Ennemy *ennemy);
-void FreeEnnemy(Ennemy **ennemy);
+void FreeEnnemy(Ennemy **ennemy, GLFWwindow *window2D, GLFWwindow *window3D);
 
 int CreateEnnemy3DVertices(Ennemy *Ennemy, Ray **rays, int playerPosX, int playerPosY, float playerAngle);
 #endif

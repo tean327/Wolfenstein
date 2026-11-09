@@ -32,5 +32,5 @@ void FreeListWallMemory(ListWall *head);
 
 void AddAtEndOfListEnnemy(Ennemy *value, ListEnnemy *head);
 int IsInsideListEnnemy(ListEnnemy *head, Ennemy *value);
-void FreeListEnnemyMemory(ListEnnemy *head);
+void FreeListEnnemyMemory(ListEnnemy *head, GLFWwindow *window2D, GLFWwindow *window3D);
 #endif
