@@ -117,6 +117,8 @@ void FreeEnnemy(Ennemy **ennemy, GLFWwindow *window2D, GLFWwindow *window3D)
     while((err = glGetError()) != GL_NO_ERROR) 
         printf("Erreur OpenGL APRES la suppression : %u", err);
 
+    free((*ennemy)->texture->data);
+    free((*ennemy)->texture);
     free((*ennemy)->position);
     free((*ennemy)->size);
     free(*ennemy);
