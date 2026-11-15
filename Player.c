@@ -1,6 +1,6 @@
 #include "Player.h"
 
-Player *CreatePlayer(int speed)
+Player *CreatePlayer(int speed, int pv)
 {
     Player *player = (Player *)malloc(sizeof(Player));
     if (!player)
@@ -10,6 +10,7 @@ Player *CreatePlayer(int speed)
     }
 
     player->speed = speed;
+    player->pv = pv;
     player->position.X = PLAYER_ORIGINAL_POS_X;
     player->position.Y = PLAYER_ORIGINAL_POS_Y;
     player->angle = 2 * PI;
@@ -34,7 +35,13 @@ int Shoot(Player *player, ListEnnemy **ennemyNode, GLFWwindow *window2D, GLFWwin
             hasTouch = 1;
             if (--ennemy->pv <= 0)
             {
-                KillEnnemy(ennemyNode, window2D, window3D);
+                (*ennemyNode)->previous->next = (*ennemyNode)->next;
+                if((*ennemyNode)->next)
+                    (*ennemyNode)->next->previous = (*ennemyNode)->previous;
+
+                FreeEnnemy(&ennemy, window2D, window3D);
+
+                free(*ennemyNode);
                 return 1;
             }
             break;

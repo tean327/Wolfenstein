@@ -5,6 +5,7 @@
 #include "LinkedList.h"
 #include "shaders.h"
 #include "Player.h"
+#include "EnnemyFuncs.h"
 #include "Ray.h"
 
 #define PLAYERSIZE 20
@@ -133,7 +134,7 @@ int KeyPressed(int key);
 
 int main(int argc, char *argv[])
 {
-    Player *player = CreatePlayer(speed);
+    Player *player = CreatePlayer(speed, 5);
     if (!player)
         return 2;
 
@@ -208,6 +209,15 @@ int main(int argc, char *argv[])
     Ennemy *ennemy3 = CreateEnnemy(3, 900, 500, textProgram, HEIGHT, WIDTH, "assets/guard.bmp");
     printf("ENNEMY 3: POS(%f, %f), SIZE(%f, %f)\n", ennemy3->position->X, ennemy3->position->Y, ennemy3->size->X, ennemy3->size->Y);
     AddAtEndOfListEnnemy(ennemy3, ennemyHead);
+    
+    Ennemy *ennemy4 = CreateEnnemy(3, 350, 500, textProgram, HEIGHT, WIDTH, "assets/guard.bmp");
+    printf("ENNEMY 4: POS(%f, %f), SIZE(%f, %f)\n", ennemy4->position->X, ennemy4->position->Y, ennemy4->size->X, ennemy4->size->Y);
+    AddAtEndOfListEnnemy(ennemy4, ennemyHead);
+
+    Ennemy *ennemy5 = CreateEnnemy(3, 550, 625, textProgram, HEIGHT, WIDTH, "assets/guard.bmp");
+    printf("ENNEMY 5: POS(%f, %f), SIZE(%f, %f)\n", ennemy5->position->X, ennemy5->position->Y, ennemy5->size->X, ennemy5->size->Y);
+    AddAtEndOfListEnnemy(ennemy5, ennemyHead);
+
 
     // After that everything will be bind only for the window3D
     glfwMakeContextCurrent(window3D);
@@ -228,6 +238,8 @@ int main(int argc, char *argv[])
     Generate3DVAOVOBSEnemy(ennemy);
     Generate3DVAOVOBSEnemy(ennemy2);
     Generate3DVAOVOBSEnemy(ennemy3);
+    Generate3DVAOVOBSEnemy(ennemy4);
+    Generate3DVAOVOBSEnemy(ennemy5);
 
     loc = glGetUniformLocation(Program, "mvp");
 
@@ -257,7 +269,7 @@ int main(int argc, char *argv[])
     }
 
     int keySpacePreviousState = 0;
-    while (!glfwWindowShouldClose(window) && !glfwWindowShouldClose(window3D))
+    while (!glfwWindowShouldClose(window) && !glfwWindowShouldClose(window3D) && player->pv > 0)
     {
         glfwMakeContextCurrent(window);
         glUseProgram(Program);
@@ -310,19 +322,25 @@ int main(int argc, char *argv[])
         glClear(GL_COLOR_BUFFER_BIT);
 
         glDisable(GL_SCISSOR_TEST);
+        //=================================================================================
 
         if (ennemyHead)
         {
             ListEnnemy *crrnt = ennemyHead->next;
             int currentSpaceState = KeyPressed(GLFW_KEY_SPACE);
+            int i = 0;
             while (crrnt)
             {
+                
                 int vertCount = CreateEnnemy3DVertices(crrnt->VALUE, rays, playerPosX, playerPosY, playerAngle);
                 if (vertCount > 0)
                 {
                     glBindVertexArray(crrnt->VALUE->VAO3D);
                     glDrawArrays(GL_TRIANGLES, 0, vertCount);
                     glBindVertexArray(0);
+
+                    crrnt->VALUE->timeSinceLastShoot += deltaTime;
+                    ShootPlayer(player, crrnt->VALUE);
                 }
 
                 if (currentSpaceState == 0 && currentSpaceState != keySpacePreviousState)
@@ -335,10 +353,9 @@ int main(int argc, char *argv[])
                     }
                 }
                 crrnt = crrnt->next;
+                i++;
             }
             keySpacePreviousState = currentSpaceState;
-
-            // Draw3DEnnemies(ennemyHead, keySpacePreviousState, currentSpaceState, player, rays);
         }
 
         Create3DWalls(&VAO_Walls, &VBO_3D_Vert, &VBO_3D_Color);
@@ -366,6 +383,9 @@ int main(int argc, char *argv[])
 
         glfwPollEvents();
     }
+
+    if(player->pv <= 0)
+        printf("=============================YOU'VE LOST=========================================\n");
 
     FreeListEnnemyMemory(ennemyHead, window, window3D);
 
@@ -478,6 +498,11 @@ void CreateGrid()
     TileSizeX = WIDTH / GRID_WIDTH;
     TileSizeY = HEIGHT / GRID_HEIGHT;
     head = (ListWall *)malloc(sizeof(ListWall));
+    if(!head)
+    {
+        printf("Can't allocate memory for head wall\n");
+        exit(2);
+    }
     head->next = NULL;
     head->VALUE = NULL;
     for (int x = 0; x < WIDTH; x += TileSizeX)

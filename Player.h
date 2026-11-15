@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "mathFuncs.h"
-#include "EnnemyFuncs.h"
+#include"LinkedList.h"
 
 #define PLAYER_SIZE 20
 #define PLAYER_ORIGINAL_POS_X 620
@@ -15,8 +15,9 @@ typedef struct
     Vector2 position;
     float angle;
     int speed;
+    int pv;
 } Player;
 
-Player *CreatePlayer(int speed);
+Player *CreatePlayer(int speed, int pv);
 int Shoot(Player *player, ListEnnemy **ennemyNode, GLFWwindow *window2D, GLFWwindow *window3D);
 #endif

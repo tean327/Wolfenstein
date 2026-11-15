@@ -20,6 +20,8 @@ Ennemy *CreateEnnemy(int pPv, int posX, int posY, GLuint pProgram, int height, i
         return NULL;
 
     ennemy->pv = pPv;
+    ennemy->distanceDeTir = 200;
+    ennemy->timeSinceLastShoot = 0;
 
     ennemy->position->X = posX;
     ennemy->position->Y = posY;
@@ -32,7 +34,8 @@ Ennemy *CreateEnnemy(int pPv, int posX, int posY, GLuint pProgram, int height, i
         ConvertToOpenGLX(ennemy->size->X, width), ConvertToOpenGLY(ennemy->size->Y, height), 0.0f,
         ConvertToOpenGLX(ennemy->position->X, width), ConvertToOpenGLY(ennemy->position->Y, height), 0.0f,
         ConvertToOpenGLX(ennemy->size->X, width), ConvertToOpenGLY(ennemy->position->Y, height), 0.0f,
-        ConvertToOpenGLX(ennemy->size->X, width), ConvertToOpenGLY(ennemy->size->Y, height), 0.0f};
+        ConvertToOpenGLX(ennemy->size->X, width), ConvertToOpenGLY(ennemy->size->Y, height), 0.0f
+    };
 
     GLfloat color[18] = {
 		0.0f, 1.0f,
@@ -40,7 +43,8 @@ Ennemy *CreateEnnemy(int pPv, int posX, int posY, GLuint pProgram, int height, i
 		1.0f, 0.0f,
 		1.0f, 0.0f,
 		0.0f, 0.0f,
-		0.0f, 1.0f};
+		0.0f, 1.0f
+    };
 
     // Copy of vertices into the ennemy->vertices array
     // We can't assign it directly because ennemy->vertices has already been created
@@ -94,11 +98,9 @@ void Generate3DVAOVOBSEnemy(Ennemy *ennemy)
 void FreeEnnemy(Ennemy **ennemy, GLFWwindow *window2D, GLFWwindow *window3D)
 {
 
-    // Exemple de vérification d'erreur rapide
     GLenum err;
-    while((err = glGetError()) != GL_NO_ERROR) {
-        printf("Erreur OpenGL AVANT la suppression : %u", err);
-    }
+    while((err = glGetError()) != GL_NO_ERROR) 
+        printf("Erreur OpenGL AVANT la suppression : %u\n", err);
 
     glfwMakeContextCurrent(window2D);
     glDeleteVertexArrays(1, &(*ennemy)->VAO);
@@ -112,9 +114,8 @@ void FreeEnnemy(Ennemy **ennemy, GLFWwindow *window2D, GLFWwindow *window3D)
 
 
 
-    while((err = glGetError()) != GL_NO_ERROR) {
+    while((err = glGetError()) != GL_NO_ERROR) 
         printf("Erreur OpenGL APRES la suppression : %u", err);
-    }
 
     free((*ennemy)->position);
     free((*ennemy)->size);

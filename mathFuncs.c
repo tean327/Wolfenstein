@@ -64,6 +64,11 @@ void MultiplyMatriceToVector(float result[], Vector2 *vector)
     result[14] = 0.0f;
 }
 
+float VectorNorm(float xA, float yA, float xB, float yB)
+{
+    return sqrt(pow(xB - xA, 2) + pow(yB - yA, 2));
+}
+
 /// @brief Return the distance from the ray to the wall, also take care of the different angle, if not the wall will not be a square
 /// @return
 float CalculRayDistance(float xA, float yA, float xB, float yB, float rayAngle, float playerAngle)

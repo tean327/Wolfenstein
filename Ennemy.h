@@ -12,6 +12,8 @@
 typedef struct
 {
     int pv;
+    int distanceDeTir;
+    float timeSinceLastShoot;
     Vector2 *position;
     Vector2 *size;
     GLfloat vertices[6 * 3];

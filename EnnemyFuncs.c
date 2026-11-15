@@ -23,3 +23,16 @@ void Draw2DEnnemies(ListEnnemy *ennemyHead)
         crrnt = crrnt->next;
     }
 }
+
+void ShootPlayer(Player* p, Ennemy* e)
+{
+    Vector2 centerOfEnnemy = (Vector2){ e->position->X + ENNEMY_SIZE/2, e->position->Y + ENNEMY_SIZE/2 };
+    if(VectorNorm(centerOfEnnemy.X, centerOfEnnemy.Y, p->position.X, p->position.Y)
+     <= VectorNorm(centerOfEnnemy.X, centerOfEnnemy.Y, centerOfEnnemy.X + e->distanceDeTir, centerOfEnnemy.Y + e->distanceDeTir)
+        && e->timeSinceLastShoot >= 2/*Si ca fait plus de 2 sec qu'il a pas tiré il peut*/)
+    {
+        printf("%p SHOOT THE PLAYER\n", e);
+        p->pv--;
+        e->timeSinceLastShoot = 0.;
+    }
+}
